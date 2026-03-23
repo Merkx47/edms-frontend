@@ -1,6 +1,6 @@
-import { MdApartment, MdCalendarToday, MdCheckCircle, MdDarkMode, MdInfoOutline, MdLightMode, MdLogout, MdNotifications, MdPerson, MdSettings, MdWarning } from 'react-icons/md';
+import { MdApartment, MdCalendarToday, MdCheckCircle, MdDarkMode, MdInfoOutline, MdLightMode, MdLogout, MdNotifications, MdPerson, MdPublic, MdSettings, MdWarning } from 'react-icons/md';
 import { useFinOpsStore, formatCompactCurrency } from '@/lib/finops-store';
-import { mockTenants, generateKPIs, getDaysFromPreset } from '@/lib/mock-data';
+import { mockTenants, generateKPIs, getDaysFromPreset, getRegionScale } from '@/lib/mock-data';
 import { LanguageSelector } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,7 +24,8 @@ import {
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import type { Currency, DateRangePreset } from '@shared/schema';
+import type { Currency, DateRangePreset, HuaweiRegion } from '@shared/schema';
+import { regionNames } from '@shared/schema';
 import huaweiLogo from '@assets/image_1764758201045.png';
 import { useMemo, useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
@@ -59,12 +60,19 @@ const notifications = [
 ];
 
 const currencyOptions: { value: Currency; label: string; flag: string }[] = [
-  { value: 'USD', label: 'USD', flag: '🇺🇸' },
-  { value: 'GBP', label: 'GBP', flag: '🇬🇧' },
-  { value: 'EUR', label: 'EUR', flag: '🇪🇺' },
-  { value: 'JPY', label: 'JPY', flag: '🇯🇵' },
   { value: 'CNY', label: 'CNY', flag: '🇨🇳' },
+  { value: 'EUR', label: 'EUR', flag: '🇪🇺' },
+  { value: 'GBP', label: 'GBP', flag: '🇬🇧' },
+  { value: 'JPY', label: 'JPY', flag: '🇯🇵' },
   { value: 'NGN', label: 'NGN', flag: '🇳🇬' },
+  { value: 'USD', label: 'USD', flag: '🇺🇸' },
+];
+
+const regionOptions: { value: HuaweiRegion | 'all'; label: string }[] = [
+  { value: 'all', label: 'All Regions' },
+  ...(Object.entries(regionNames) as [HuaweiRegion, string][])
+    .sort(([, a], [, b]) => a.localeCompare(b))
+    .map(([value, label]) => ({ value, label })),
 ];
 
 const dateRangeOptions: { value: DateRangePreset; label: string }[] = [
@@ -83,6 +91,8 @@ export function Header() {
     setCurrency,
     selectedTenantId,
     setSelectedTenantId,
+    selectedRegion,
+    setSelectedRegion,
     dateRange,
     setDateRange,
   } = useFinOpsStore();
@@ -105,7 +115,7 @@ export function Header() {
 
   const daysInPeriod = useMemo(() => getDaysFromPreset(dateRange.preset), [dateRange.preset]);
 
-  const kpis = useMemo(() => generateKPIs(selectedTenantId, daysInPeriod), [selectedTenantId, daysInPeriod]);
+  const kpis = useMemo(() => generateKPIs(selectedTenantId, daysInPeriod, selectedRegion), [selectedTenantId, daysInPeriod, selectedRegion]);
 
   const handleDateRangeChange = (preset: DateRangePreset) => {
     const today = new Date();
@@ -179,11 +189,11 @@ export function Header() {
                 <div className="flex items-center gap-2">
                   <span className="font-medium">All Tenants</span>
                   <Badge variant="secondary" className="text-xs">
-                    {mockTenants.length}
+                    {selectedRegion === 'all' ? mockTenants.length : mockTenants.filter(t => getRegionScale(t.id, selectedRegion) > 0).length}
                   </Badge>
                 </div>
               </SelectItem>
-              {mockTenants.map((tenant) => (
+              {(selectedRegion === 'all' ? mockTenants : mockTenants.filter(t => getRegionScale(t.id, selectedRegion) > 0)).map((tenant) => (
                 <SelectItem
                   key={tenant.id}
                   value={tenant.id}
@@ -193,6 +203,23 @@ export function Header() {
                     <span className="truncate">{tenant.name}</span>
                     <span className="text-xs text-muted-foreground flex-shrink-0">{tenant.country}</span>
                   </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={selectedRegion}
+            onValueChange={(value) => setSelectedRegion(value as HuaweiRegion | 'all')}
+          >
+            <SelectTrigger className="w-[160px] bg-background/50 border-border">
+              <MdPublic className="h-4 w-4 text-muted-foreground mr-1" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {regionOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
                 </SelectItem>
               ))}
             </SelectContent>

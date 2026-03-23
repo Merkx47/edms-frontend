@@ -64,7 +64,7 @@ interface ZoneNode {
 const hcsHierarchy: ZoneNode[] = [
   {
     id: 'zone-a',
-    name: 'Zone A (Lagos)',
+    name: 'Region - Lagos MTN-1',
     tenants: [
       {
         id: 'tenant-1',
@@ -127,7 +127,7 @@ const hcsHierarchy: ZoneNode[] = [
   },
   {
     id: 'zone-b',
-    name: 'Zone B (Abuja)',
+    name: 'Region - AF South',
     tenants: [
       {
         id: 'tenant-3',
@@ -157,7 +157,7 @@ const hcsHierarchy: ZoneNode[] = [
   },
   {
     id: 'zone-c',
-    name: 'Zone C (Nairobi)',
+    name: 'Region - AP Southeast',
     tenants: [
       {
         id: 'tenant-4',
@@ -179,7 +179,7 @@ const hcsHierarchy: ZoneNode[] = [
   },
   {
     id: 'zone-d',
-    name: 'Zone D (Johannesburg)',
+    name: 'Region - EU West',
     tenants: [
       {
         id: 'tenant-5',
@@ -212,7 +212,7 @@ const hcsHierarchy: ZoneNode[] = [
 // Helper to get entity type display name
 const getEntityTypeLabel = (type: EntityType): string => {
   const labels: Record<EntityType, string> = {
-    zone: 'Zone',
+    zone: 'Region',
     tenant: 'Tenant',
     vdc1: 'VDC Level 1',
     vdc2: 'VDC Level 2',
@@ -224,7 +224,7 @@ const getEntityTypeLabel = (type: EntityType): string => {
 };
 
 export default function Budgets() {
-  const { currency, selectedTenantId } = useFinOpsStore();
+  const { currency, selectedTenantId, selectedRegion } = useFinOpsStore();
   const { tenants, budgets, addBudget, updateBudget, deleteBudget } = useDataStore();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -338,7 +338,7 @@ export default function Budgets() {
 
     return relevantBudgets.map(budget => {
       const tenant = tenants.find(t => t.id === budget.tenantId);
-      const kpis = generateKPIs(budget.tenantId);
+      const kpis = generateKPIs(budget.tenantId, 30, selectedRegion);
       const spent = kpis.totalSpend;
       const percentage = (spent / budget.amount) * 100;
 
@@ -356,7 +356,7 @@ export default function Budgets() {
     if (selectedTenantId !== 'all') return [];
     const budgetTenantIds = budgets.map(b => b.tenantId);
     return tenants.filter(t => !budgetTenantIds.includes(t.id)).map(tenant => {
-      const kpis = generateKPIs(tenant.id);
+      const kpis = generateKPIs(tenant.id, 30, selectedRegion);
       return {
         id: `default-${tenant.id}`,
         tenantId: tenant.id,
@@ -481,9 +481,9 @@ export default function Budgets() {
                     <Label className="text-sm font-medium">Select Entity (HCS Hierarchy)</Label>
                   </div>
 
-                  {/* Zone Selection */}
+                  {/* Region Selection */}
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right text-xs text-muted-foreground">Zone</Label>
+                    <Label className="text-right text-xs text-muted-foreground">Region</Label>
                     <div className="col-span-3">
                       <Select
                         value={selectedZone}
@@ -498,7 +498,7 @@ export default function Budgets() {
                       >
                         <SelectTrigger className="h-9">
                           <MdPublic className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
-                          <SelectValue placeholder="Select zone" />
+                          <SelectValue placeholder="Select region" />
                         </SelectTrigger>
                         <SelectContent>
                           {availableZones.map((zone) => (

@@ -34,7 +34,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useFinOpsStore, formatCurrency, formatCompactCurrency } from '@/lib/finops-store';
 import { useDataStore } from '@/lib/data-store';
-import { generateTenantSummaries } from '@/lib/mock-data';
+import { generateTenantSummaries, getRegionScale } from '@/lib/mock-data';
 import { serviceInfo } from '@shared/schema';
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -46,7 +46,7 @@ const industries = ['Manufacturing', 'Telecommunications', 'Fintech', 'Banking',
 const countries = ['Nigeria', 'Kenya', 'South Africa', 'Ghana', 'Egypt', 'Morocco', 'Tanzania', 'Uganda'];
 
 export default function Tenants() {
-  const { currency, setSelectedTenantId } = useFinOpsStore();
+  const { currency, setSelectedTenantId, selectedRegion } = useFinOpsStore();
   const { tenants, addTenant, updateTenant, deleteTenant } = useDataStore();
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,19 +68,24 @@ export default function Tenants() {
   });
 
   const summaries = useMemo(() => {
-    // Generate summaries based on current tenants
-    return tenants.map(tenant => {
-      const baseSpend = tenant.budget * (0.4 + Math.random() * 0.5);
+    // Filter tenants by region — only show tenants with allocation in selected region
+    const regionFiltered = selectedRegion === 'all'
+      ? tenants
+      : tenants.filter(t => getRegionScale(t.id, selectedRegion) > 0);
+
+    return regionFiltered.map(tenant => {
+      const regionScale = getRegionScale(tenant.id, selectedRegion);
+      const baseSpend = tenant.budget * (0.4 + Math.random() * 0.5) * regionScale;
       return {
         tenant,
         totalSpend: baseSpend,
-        budgetUsage: (baseSpend / tenant.budget) * 100,
+        budgetUsage: (baseSpend / (tenant.budget * regionScale || 1)) * 100,
         efficiencyScore: tenant.efficiencyScore,
         topService: ['ECS', 'RDS', 'OBS', 'CCE'][Math.floor(Math.random() * 4)] as any,
         recommendationCount: Math.floor(Math.random() * 10) + 1,
       };
     });
-  }, [tenants]);
+  }, [tenants, selectedRegion]);
 
   const filteredTenants = useMemo(() => {
     return summaries.filter(s => {

@@ -1,0 +1,89 @@
+1
+00:00:03,000 --> 00:00:11,016
+Welcome... to the Qocent FinOps Platform. The only
+cost management solution... purpose-built... for Huawei Cloud Stack.
+
+2
+00:00:17,399 --> 00:00:36,623
+This... is your Overview Dashboard. Right at the top, four KPI cards tell you everything you need to know. Total spend month-to-date... budget
+utilization... active resources... and potential savings. And below that? A cost trend chart, with thirty days of history, and a seven-day AI-powered forecast.
+
+3
+00:00:40,399 --> 00:00:54,128
+Now let's talk about Cost Analytics. You can slice your spending five different ways. By service... by
+region... by tenant... and over time. The comparison tab lets you benchmark across periods, tenants, or regions.
+
+4
+00:00:58,000 --> 00:01:11,992
+Here's your Resources module. Every cloud resource, organized inside Virtual Data Centers... exactly
+the way HCS structures them. CPU, memory, network, and disk utilization... right alongside cost.
+
+5
+00:01:15,799 --> 00:01:31,519
+Recommendations. Your optimization command center. Six categories. Rightsizing... idle resources... storage... network...
+reserved capacity... and database tuning. Every recommendation shows estimated savings and confidence score.
+
+6
+00:01:33,400 --> 00:01:39,496
+And the history tab... tracks every action you've
+taken. Easy wins can be implemented with one click.
+
+7
+00:01:42,200 --> 00:01:49,688
+Tenant Management. Every tenant at a glance...
+spend, resource count, efficiency score, and budget status.
+
+8
+00:01:51,400 --> 00:02:01,840
+Click into any tenant... and you get the full picture. Resources,
+cost trends, activity logs, and access visibility across the entire VDC hierarchy.
+
+9
+00:02:04,599 --> 00:02:16,240
+Tag Governance. Create tag groups with enforced data types. The compliance dashboard shows
+your tagging score... highlights missing required tags... and tracks violations across every tenant.
+
+10
+00:02:20,000 --> 00:02:33,824
+Budget Management. Set budgets at any level... tenant, VDC, or zone. Green means on track. Amber
+means at risk. Red... means you've gone over. Progress bars and percentages give you instant clarity.
+
+11
+00:02:37,599 --> 00:02:51,015
+Cost Allocation. Two treemap visualizations, side by side. Service costs on the left... tenant costs on the right.
+The bigger the block... the bigger the spend. You see exactly where your money is going, at a glance.
+
+12
+00:02:54,800 --> 00:03:07,784
+Reports. Nine pre-built types... plus a custom report builder. Schedule them daily, weekly,
+or monthly. Export to CSV, PDF, or Excel. Share directly with your stakeholders.
+
+13
+00:03:11,599 --> 00:03:23,623
+Waste Detection. This module finds money you're leaving on the table. Idle compute... orphaned
+storage... unused network resources. Every resource gets a waste score from zero to a hundred.
+
+14
+00:03:27,400 --> 00:03:38,080
+Notifications. Budget alerts... cost anomalies... optimization recommendations. All
+organized by severity. Filter by category or read status.
+
+15
+00:03:41,800 --> 00:03:51,064
+The Support Center. Three channels in one module. Submit tickets... chat live
+with human agents... or pick up the phone with twenty-four seven coverage.
+
+16
+00:03:54,800 --> 00:04:05,912
+The HCS Architecture Guide. An interactive diagram of the full Cloud
+Stack hierarchy. ManageOne... zones... tenants... and five levels of Virtual Data Centers.
+
+17
+00:04:09,800 --> 00:04:22,232
+And finally... Settings. Profile, currency, language. The Users tab for role-based
+access. API Keys to connect Huawei Cloud. And Security for two-factor authentication.
+
+18
+00:04:26,000 --> 00:04:40,615
+Oh... and everything you've just seen? Works beautifully... in dark mode. Two hundred and eighteen features. Fourteen
+modules. Built for Huawei Cloud Stack. Built for Africa. Built for enterprise. This... is the Qocent FinOps Platform.

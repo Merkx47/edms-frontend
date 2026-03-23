@@ -22,10 +22,10 @@ const REGION_COLORS = [
 ];
 
 export function RegionBreakdownChart() {
-  const { currency, selectedTenantId, dateRange } = useFinOpsStore();
+  const { currency, selectedTenantId, selectedRegion, dateRange } = useFinOpsStore();
 
   const daysInPeriod = useMemo(() => getDaysFromPreset(dateRange.preset), [dateRange.preset]);
-  const breakdown = useMemo(() => generateRegionBreakdown(selectedTenantId, daysInPeriod), [selectedTenantId, daysInPeriod]);
+  const breakdown = useMemo(() => generateRegionBreakdown(selectedTenantId, daysInPeriod, selectedRegion), [selectedTenantId, daysInPeriod, selectedRegion]);
   
   const chartData = breakdown.map((item, index) => ({
     region: item.region,

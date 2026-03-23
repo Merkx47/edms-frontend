@@ -720,7 +720,7 @@ function collectLeafSummaries(
 // =====================================================
 
 export default function Resources() {
-  const { currency, selectedTenantId } = useFinOpsStore();
+  const { currency, selectedTenantId, selectedRegion } = useFinOpsStore();
 
   // State
   const [searchQuery, setSearchQuery] = useState('');
@@ -778,7 +778,7 @@ export default function Resources() {
   }, []);
 
   // Data generation
-  const resources = useMemo(() => generateResources(selectedTenantId), [selectedTenantId]);
+  const resources = useMemo(() => generateResources(selectedTenantId, selectedRegion), [selectedTenantId, selectedRegion]);
 
   const vdcHierarchies = useMemo(
     () => generateAllVDCHierarchies(selectedTenantId),

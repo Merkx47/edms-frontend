@@ -9,6 +9,9 @@ interface FinOpsStore {
   selectedTenantId: string | 'all';
   setSelectedTenantId: (tenantId: string | 'all') => void;
 
+  selectedRegion: HuaweiRegion | 'all';
+  setSelectedRegion: (region: HuaweiRegion | 'all') => void;
+
   dateRange: DateRange;
   setDateRange: (dateRange: DateRange) => void;
 
@@ -32,6 +35,9 @@ export const useFinOpsStore = create<FinOpsStore>((set) => ({
 
   selectedTenantId: 'all',
   setSelectedTenantId: (selectedTenantId) => set({ selectedTenantId }),
+
+  selectedRegion: 'all',
+  setSelectedRegion: (selectedRegion) => set({ selectedRegion }),
 
   dateRange: {
     preset: 'last30days',

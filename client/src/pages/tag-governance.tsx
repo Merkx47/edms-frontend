@@ -145,7 +145,7 @@ const REQUIRED_TAGS = ['environment', 'cost_center', 'owner', 'project', 'depart
 // =====================================================
 
 export default function TagGovernancePage() {
-  const { currency, selectedTenantId } = useFinOpsStore();
+  const { currency, selectedTenantId, selectedRegion } = useFinOpsStore();
   const { tagGroups, deleteTagGroup, duplicateTagGroup } = useDataStore();
   const [, setLocation] = useLocation();
 
@@ -155,8 +155,8 @@ export default function TagGovernancePage() {
   const [violationPage, setViolationPage] = useState(0);
   const VIOLATIONS_PER_PAGE = 10;
 
-  // Derive all metrics from real resource data, filtered by selected tenant
-  const allResources = useMemo(() => generateResources(selectedTenantId), [selectedTenantId]);
+  // Derive all metrics from real resource data, filtered by selected tenant and region
+  const allResources = useMemo(() => generateResources(selectedTenantId, selectedRegion), [selectedTenantId, selectedRegion]);
 
   // Map simple tag strings to required tag categories
   const TAG_TO_REQUIRED: Record<string, string> = useMemo(() => ({

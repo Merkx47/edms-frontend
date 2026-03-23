@@ -53,7 +53,7 @@ type ComparisonPeriod = 'week' | 'month' | 'quarter' | 'custom';
 
 export default function Analytics() {
   const {
-    currency, selectedTenantId, dateRange,
+    currency, selectedTenantId, selectedRegion, dateRange,
     selectedServices, setSelectedServices,
     selectedRegions, setSelectedRegions,
   } = useFinOpsStore();
@@ -73,10 +73,10 @@ export default function Analytics() {
 
   // Generate enough data to support the largest trend window (90d) or the global date range, whichever is bigger
   const trendDays = useMemo(() => Math.max(daysInPeriod, trendWindow), [daysInPeriod, trendWindow]);
-  const costTrend = useMemo(() => generateCostTrend(selectedTenantId, trendDays), [selectedTenantId, trendDays]);
-  const serviceBreakdown = useMemo(() => generateServiceBreakdown(selectedTenantId, daysInPeriod), [selectedTenantId, daysInPeriod]);
-  const regionBreakdown = useMemo(() => generateRegionBreakdown(selectedTenantId, daysInPeriod), [selectedTenantId, daysInPeriod]);
-  const kpis = useMemo(() => generateKPIs(selectedTenantId, daysInPeriod), [selectedTenantId, daysInPeriod]);
+  const costTrend = useMemo(() => generateCostTrend(selectedTenantId, trendDays, selectedRegion), [selectedTenantId, trendDays, selectedRegion]);
+  const serviceBreakdown = useMemo(() => generateServiceBreakdown(selectedTenantId, daysInPeriod, selectedRegion), [selectedTenantId, daysInPeriod, selectedRegion]);
+  const regionBreakdown = useMemo(() => generateRegionBreakdown(selectedTenantId, daysInPeriod, selectedRegion), [selectedTenantId, daysInPeriod, selectedRegion]);
+  const kpis = useMemo(() => generateKPIs(selectedTenantId, daysInPeriod, selectedRegion), [selectedTenantId, daysInPeriod, selectedRegion]);
 
   // ---- Feature #17: Apply filters to data ----
   const filteredServiceBreakdown = useMemo(() => {
@@ -190,7 +190,7 @@ export default function Analytics() {
     return topServices.map(service => {
       const row: Record<string, any> = { service };
       mockTenants.forEach(tenant => {
-        const breakdown = generateServiceBreakdown(tenant.id, daysInPeriod);
+        const breakdown = generateServiceBreakdown(tenant.id, daysInPeriod, selectedRegion);
         const svc = breakdown.find(s => s.service === service);
         row[tenant.name] = svc ? Math.round(svc.cost * 100) / 100 : 0;
       });

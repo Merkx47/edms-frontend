@@ -42,9 +42,9 @@ const statusIcons = {
 };
 
 export function RecommendationsPanel() {
-  const { currency, selectedTenantId } = useFinOpsStore();
-  
-  const recommendations = useMemo(() => generateRecommendations(selectedTenantId), [selectedTenantId]);
+  const { currency, selectedTenantId, selectedRegion } = useFinOpsStore();
+
+  const recommendations = useMemo(() => generateRecommendations(selectedTenantId, selectedRegion), [selectedTenantId, selectedRegion]);
   const topRecommendations = recommendations.filter(r => r.status === 'new').slice(0, 4);
   
   const totalSavings = recommendations
@@ -165,9 +165,9 @@ export function RecommendationsPanel() {
 }
 
 export function RecommendationsSummary() {
-  const { currency, selectedTenantId } = useFinOpsStore();
-  
-  const recommendations = useMemo(() => generateRecommendations(selectedTenantId), [selectedTenantId]);
+  const { currency, selectedTenantId, selectedRegion } = useFinOpsStore();
+
+  const recommendations = useMemo(() => generateRecommendations(selectedTenantId, selectedRegion), [selectedTenantId, selectedRegion]);
   
   const byType = recommendations.reduce((acc, rec) => {
     if (!acc[rec.type]) acc[rec.type] = { count: 0, savings: 0 };

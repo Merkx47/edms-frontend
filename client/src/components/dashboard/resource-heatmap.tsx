@@ -28,9 +28,9 @@ const getUtilizationStatus = (value: number) => {
 };
 
 export function ResourceHeatmap() {
-  const { currency, selectedTenantId } = useFinOpsStore();
-  
-  const resources = useMemo(() => generateResources(selectedTenantId), [selectedTenantId]);
+  const { currency, selectedTenantId, selectedRegion } = useFinOpsStore();
+
+  const resources = useMemo(() => generateResources(selectedTenantId, selectedRegion), [selectedTenantId, selectedRegion]);
   const displayedResources = resources.filter(r => r.status === 'running').slice(0, 24);
   
   const avgCpu = resources.reduce((sum, r) => sum + r.cpuUtilization, 0) / resources.length;

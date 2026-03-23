@@ -59,8 +59,8 @@ const hierarchyData: HierarchyNode = {
   children: [
     {
       id: 'zone-lagos',
-      label: 'Zone A - Lagos DC',
-      sublabel: 'Availability Zone',
+      label: 'Region - Lagos MTN-1',
+      sublabel: 'Region',
       type: 'zone',
       children: [
         {
@@ -118,8 +118,8 @@ const hierarchyData: HierarchyNode = {
     },
     {
       id: 'zone-abuja',
-      label: 'Zone B - Abuja DC',
-      sublabel: 'Availability Zone',
+      label: 'Region - AF South',
+      sublabel: 'Region',
       type: 'zone',
       children: [
         {
@@ -159,7 +159,7 @@ function getNodePath(nodeId: string, node: HierarchyNode = hierarchyData, path: 
 function getLevelName(type: NodeType): string {
   switch (type) {
     case 'root': return 'Root Level';
-    case 'zone': return 'Zone Level';
+    case 'zone': return 'Region Level';
     case 'tenant': return 'Tenant Level';
     case 'vdc1': return 'VDC Level 1';
     case 'vdc2': return 'VDC Level 2';
@@ -174,7 +174,7 @@ function getLevelName(type: NodeType): string {
 function getAccessDescription(type: NodeType): string {
   switch (type) {
     case 'root': return 'Full platform access - all zones, tenants, and resources';
-    case 'zone': return 'Zone-level access - all tenants and resources in this zone';
+    case 'zone': return 'Region-level access - all tenants and resources in this region';
     case 'tenant': return 'Tenant-level access - all VDCs and resources in this organization';
     case 'vdc1': return 'VDC L1 access - enterprise-wide view and all child VDCs';
     case 'vdc2': return 'VDC L2 access - division-level view and child VDCs';
@@ -289,7 +289,7 @@ export function UserOnboarding() {
   const [users, setUsers] = useState([
     { id: 1, name: 'Chidi Okonkwo', email: 'chidi@company.com', role: 'Admin', access: 'Bank Corp', accessType: 'tenant' as NodeType },
     { id: 2, name: 'Adaeze Nnamdi', email: 'adaeze@company.com', role: 'User', access: 'VDC L2 - IT Division', accessType: 'vdc2' as NodeType },
-    { id: 3, name: 'Emeka Eze', email: 'emeka@company.com', role: 'Viewer', access: 'Zone A - Lagos DC', accessType: 'zone' as NodeType },
+    { id: 3, name: 'Emeka Eze', email: 'emeka@company.com', role: 'Viewer', access: 'Region - Lagos MTN-1', accessType: 'zone' as NodeType },
   ]);
 
   const selectedPath = selectedNode ? getNodePath(selectedNode) : null;
@@ -442,7 +442,7 @@ export function UserOnboarding() {
                     <span className="text-muted-foreground font-medium">Hierarchy:</span>
                     <span className="text-red-600 dark:text-red-400">Root</span>
                     <span className="text-muted-foreground">→</span>
-                    <span className="text-blue-600 dark:text-blue-400">Zone</span>
+                    <span className="text-blue-600 dark:text-blue-400">Region</span>
                     <span className="text-muted-foreground">→</span>
                     <span className="text-purple-600 dark:text-purple-400">Tenant</span>
                     <span className="text-muted-foreground">→</span>

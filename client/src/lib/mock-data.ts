@@ -30,7 +30,7 @@ export const mockTenants: Tenant[] = [
     country: 'Nigeria',
     contactName: 'Chidi Okonkwo',
     contactEmail: 'chidi.okonkwo@dangote.com',
-    budget: 250000,        // Monthly budget
+    budget: 25000000,        // Monthly budget
     efficiencyScore: 78,
     status: 'active',
   },
@@ -41,7 +41,7 @@ export const mockTenants: Tenant[] = [
     country: 'Nigeria',
     contactName: 'Amaka Eze',
     contactEmail: 'amaka.eze@mtn.ng',
-    budget: 500000,
+    budget: 50000000,
     efficiencyScore: 85,
     status: 'active',
   },
@@ -52,7 +52,7 @@ export const mockTenants: Tenant[] = [
     country: 'Nigeria',
     contactName: 'Oluwaseun Adeyemi',
     contactEmail: 'oluwaseun@flutterwave.com',
-    budget: 180000,
+    budget: 18000000,
     efficiencyScore: 92,
     status: 'active',
   },
@@ -63,7 +63,7 @@ export const mockTenants: Tenant[] = [
     country: 'Kenya',
     contactName: 'Wanjiku Kamau',
     contactEmail: 'wanjiku.kamau@safaricom.co.ke',
-    budget: 320000,
+    budget: 32000000,
     efficiencyScore: 81,
     status: 'active',
   },
@@ -74,7 +74,7 @@ export const mockTenants: Tenant[] = [
     country: 'South Africa',
     contactName: 'Thabo Molefe',
     contactEmail: 'thabo.molefe@standardbank.co.za',
-    budget: 420000,
+    budget: 42000000,
     efficiencyScore: 75,
     status: 'active',
   },
@@ -85,7 +85,7 @@ export const mockTenants: Tenant[] = [
     country: 'Nigeria',
     contactName: 'Ngozi Obi',
     contactEmail: 'ngozi.obi@andela.com',
-    budget: 150000,
+    budget: 15000000,
     efficiencyScore: 88,
     status: 'active',
   },
@@ -96,7 +96,7 @@ export const mockTenants: Tenant[] = [
     country: 'Nigeria',
     contactName: 'Emmanuel Nwosu',
     contactEmail: 'emmanuel.nwosu@jumia.com',
-    budget: 280000,
+    budget: 28000000,
     efficiencyScore: 72,
     status: 'active',
   },
@@ -107,7 +107,7 @@ export const mockTenants: Tenant[] = [
     country: 'Nigeria',
     contactName: 'Chioma Ikenna',
     contactEmail: 'chioma.ikenna@interswitch.com',
-    budget: 200000,
+    budget: 20000000,
     efficiencyScore: 84,
     status: 'active',
   },
@@ -116,14 +116,14 @@ export const mockTenants: Tenant[] = [
 // FIXED monthly spend per tenant (deterministic, ~75% of budget average)
 // These are the actual current monthly totals
 const tenantMonthlySpend: Record<string, number> = {
-  'tenant-1': 187500,   // Dangote: 75% of 250k budget
-  'tenant-2': 385000,   // MTN: 77% of 500k budget
-  'tenant-3': 135000,   // Flutterwave: 75% of 180k budget
-  'tenant-4': 243200,   // Safaricom: 76% of 320k budget
-  'tenant-5': 336000,   // Standard Bank: 80% of 420k budget
-  'tenant-6': 112500,   // Andela: 75% of 150k budget
-  'tenant-7': 224000,   // Jumia: 80% of 280k budget
-  'tenant-8': 154000,   // Interswitch: 77% of 200k budget
+  'tenant-1': 18750000,   // Dangote: 75% of 25M budget
+  'tenant-2': 38500000,   // MTN: 77% of 50M budget
+  'tenant-3': 13500000,   // Flutterwave: 75% of 18M budget
+  'tenant-4': 24320000,   // Safaricom: 76% of 32M budget
+  'tenant-5': 33600000,   // Standard Bank: 80% of 42M budget
+  'tenant-6': 11250000,   // Andela: 75% of 15M budget
+  'tenant-7': 22400000,   // Jumia: 80% of 28M budget
+  'tenant-8': 15400000,   // Interswitch: 77% of 20M budget
 };
 
 // Total spend across all tenants
@@ -131,14 +131,14 @@ const TOTAL_ALL_SPEND = Object.values(tenantMonthlySpend).reduce((a, b) => a + b
 
 // Previous month spend (6% lower to show growth)
 const tenantPreviousSpend: Record<string, number> = {
-  'tenant-1': 176625,   // 94% of current
-  'tenant-2': 362300,   // 94% of current
-  'tenant-3': 128250,   // 95% of current
-  'tenant-4': 231040,   // 95% of current
-  'tenant-5': 319200,   // 95% of current
-  'tenant-6': 105750,   // 94% of current
-  'tenant-7': 215040,   // 96% of current
-  'tenant-8': 144760,   // 94% of current
+  'tenant-1': 17662500,   // 94% of current
+  'tenant-2': 36230000,   // 94% of current
+  'tenant-3': 12825000,   // 95% of current
+  'tenant-4': 23104000,   // 95% of current
+  'tenant-5': 31920000,   // 95% of current
+  'tenant-6': 10575000,   // 94% of current
+  'tenant-7': 21504000,   // 96% of current
+  'tenant-8': 14476000,   // 94% of current
 };
 
 // FIXED service breakdown per tenant (percentages of their total spend)
@@ -204,14 +204,14 @@ const tenantServiceAllocation: Record<string, Record<HuaweiService, number>> = {
 
 // FIXED region distribution per tenant (based on their geography)
 const tenantRegionAllocation: Record<string, Record<HuaweiRegion, number>> = {
-  'tenant-1': { 'af-south-1': 0.70, 'eu-west-0': 0.15, 'ap-southeast-1': 0.10, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0 },
-  'tenant-2': { 'af-south-1': 0.75, 'eu-west-0': 0.10, 'ap-southeast-1': 0.10, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0 },
-  'tenant-3': { 'af-south-1': 0.60, 'eu-west-0': 0.20, 'ap-southeast-1': 0.10, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0.05, 'na-mexico-1': 0 },
-  'tenant-4': { 'af-south-1': 0.80, 'eu-west-0': 0.10, 'ap-southeast-1': 0.05, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0 },
-  'tenant-5': { 'af-south-1': 0.85, 'eu-west-0': 0.10, 'ap-southeast-1': 0.05, 'ap-southeast-2': 0, 'ap-southeast-3': 0, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0 },
-  'tenant-6': { 'af-south-1': 0.50, 'eu-west-0': 0.25, 'ap-southeast-1': 0.15, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0.05 },
-  'tenant-7': { 'af-south-1': 0.65, 'eu-west-0': 0.15, 'ap-southeast-1': 0.10, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0.05, 'na-mexico-1': 0 },
-  'tenant-8': { 'af-south-1': 0.65, 'eu-west-0': 0.20, 'ap-southeast-1': 0.10, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0 },
+  'tenant-1': { 'lagos-mtn-1': 0.35, 'af-south-1': 0.35, 'eu-west-0': 0.15, 'ap-southeast-1': 0.10, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0 },
+  'tenant-2': { 'lagos-mtn-1': 0.40, 'af-south-1': 0.35, 'eu-west-0': 0.10, 'ap-southeast-1': 0.10, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0 },
+  'tenant-3': { 'lagos-mtn-1': 0.30, 'af-south-1': 0.30, 'eu-west-0': 0.20, 'ap-southeast-1': 0.10, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0.05, 'na-mexico-1': 0 },
+  'tenant-4': { 'lagos-mtn-1': 0.45, 'af-south-1': 0.35, 'eu-west-0': 0.10, 'ap-southeast-1': 0.05, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0 },
+  'tenant-5': { 'lagos-mtn-1': 0.45, 'af-south-1': 0.40, 'eu-west-0': 0.10, 'ap-southeast-1': 0.05, 'ap-southeast-2': 0, 'ap-southeast-3': 0, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0 },
+  'tenant-6': { 'lagos-mtn-1': 0.25, 'af-south-1': 0.25, 'eu-west-0': 0.25, 'ap-southeast-1': 0.15, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0.05 },
+  'tenant-7': { 'lagos-mtn-1': 0.35, 'af-south-1': 0.30, 'eu-west-0': 0.15, 'ap-southeast-1': 0.10, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0.05, 'na-mexico-1': 0 },
+  'tenant-8': { 'lagos-mtn-1': 0.35, 'af-south-1': 0.30, 'eu-west-0': 0.20, 'ap-southeast-1': 0.10, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0 },
 };
 
 // Resource counts per tenant (deterministic)
@@ -260,21 +260,34 @@ export function getDaysFromPreset(preset: string): number {
   }
 }
 
+// Helper: get the region's share of spend for scaling when a specific region is selected
+export function getRegionScale(tenantId: string | 'all', region: HuaweiRegion | 'all'): number {
+  if (region === 'all') return 1;
+  if (tenantId === 'all') {
+    // Average across all tenants for this region
+    const allocations = Object.values(tenantRegionAllocation);
+    const total = allocations.reduce((sum, alloc) => sum + (alloc[region] || 0), 0);
+    return total / allocations.length;
+  }
+  return tenantRegionAllocation[tenantId]?.[region] || 0;
+}
+
 // Generate cost trend data (configurable days + 7 days forecast)
-export function generateCostTrend(tenantId: string | 'all', daysToShow: number = 30): CostTrendPoint[] {
+export function generateCostTrend(tenantId: string | 'all', daysToShow: number = 30, region: HuaweiRegion | 'all' = 'all'): CostTrendPoint[] {
   const data: CostTrendPoint[] = [];
   const today = new Date();
 
   // Get the monthly total and calculate daily average
   const monthlyTotal = tenantId === 'all'
     ? TOTAL_ALL_SPEND
-    : tenantMonthlySpend[tenantId] || 150000;
+    : tenantMonthlySpend[tenantId] || 15000000;
 
-  const dailyAverage = monthlyTotal / 30;
+  const regionScale = getRegionScale(tenantId, region);
+  const dailyAverage = (monthlyTotal / 30) * regionScale;
   const previousMonthlyTotal = tenantId === 'all'
     ? Object.values(tenantPreviousSpend).reduce((a, b) => a + b, 0)
-    : tenantPreviousSpend[tenantId] || 140000;
-  const previousDailyAverage = previousMonthlyTotal / 30;
+    : tenantPreviousSpend[tenantId] || 14000000;
+  const previousDailyAverage = (previousMonthlyTotal / 30) * regionScale;
 
   // Tenant-based seed for consistent but varied data per tenant
   const tenantSeed = tenantId === 'all' ? 42 : parseInt(tenantId.replace('tenant-', ''), 10) * 17;
@@ -391,7 +404,7 @@ export function generateCostTrend(tenantId: string | 'all', daysToShow: number =
 
 // Service breakdown data - sums to total spend for the period
 // daysInPeriod scales the costs proportionally (default 30 = monthly)
-export function generateServiceBreakdown(tenantId: string | 'all', daysInPeriod: number = 30): ServiceBreakdown[] {
+export function generateServiceBreakdown(tenantId: string | 'all', daysInPeriod: number = 30, region: HuaweiRegion | 'all' = 'all'): ServiceBreakdown[] {
   const services: HuaweiService[] = [
     'ECS', 'RDS', 'OBS', 'EVS', 'ELB', 'VPC', 'CDN', 'NAT', 'WAF', 'DCS',
     'DDS', 'GaussDB', 'FunctionGraph', 'APIG', 'SMN', 'CTS', 'CCE', 'SWR',
@@ -399,6 +412,7 @@ export function generateServiceBreakdown(tenantId: string | 'all', daysInPeriod:
 
   // Scale factor based on days (monthly data is base)
   const scaleFactor = daysInPeriod / 30;
+  const regionScale = getRegionScale(tenantId, region);
 
   let breakdown: ServiceBreakdown[];
 
@@ -413,7 +427,8 @@ export function generateServiceBreakdown(tenantId: string | 'all', daysInPeriod:
     });
 
     mockTenants.forEach(tenant => {
-      const spend = tenantMonthlySpend[tenant.id] * scaleFactor;
+      const tRegionScale = getRegionScale(tenant.id, region);
+      const spend = tenantMonthlySpend[tenant.id] * scaleFactor * tRegionScale;
       const allocation = tenantServiceAllocation[tenant.id];
       const resourceCount = tenantResourceCounts[tenant.id];
 
@@ -441,7 +456,7 @@ export function generateServiceBreakdown(tenantId: string | 'all', daysInPeriod:
     });
   } else {
     // Single tenant
-    const spend = (tenantMonthlySpend[tenantId] || 150000) * scaleFactor;
+    const spend = (tenantMonthlySpend[tenantId] || 15000000) * scaleFactor * regionScale;
     const allocation = tenantServiceAllocation[tenantId] || tenantServiceAllocation['tenant-1'];
     const resourceCount = tenantResourceCounts[tenantId] || 80;
 
@@ -467,11 +482,14 @@ export function generateServiceBreakdown(tenantId: string | 'all', daysInPeriod:
 
 // Region breakdown data - sums to total spend for the period
 // daysInPeriod scales the costs proportionally (default 30 = monthly)
-export function generateRegionBreakdown(tenantId: string | 'all', daysInPeriod: number = 30): RegionBreakdown[] {
-  const regions: HuaweiRegion[] = [
+export function generateRegionBreakdown(tenantId: string | 'all', daysInPeriod: number = 30, region: HuaweiRegion | 'all' = 'all'): RegionBreakdown[] {
+  const allRegions: HuaweiRegion[] = [
     'af-south-1', 'eu-west-0', 'ap-southeast-1', 'ap-southeast-2', 'ap-southeast-3',
     'cn-north-4', 'cn-east-3', 'la-south-2', 'me-east-1', 'na-mexico-1',
   ];
+
+  // When a specific region is selected, only show that region
+  const regions = region === 'all' ? allRegions : allRegions.filter(r => r === region);
 
   // Scale factor based on days (monthly data is base)
   const scaleFactor = daysInPeriod / 30;
@@ -508,7 +526,7 @@ export function generateRegionBreakdown(tenantId: string | 'all', daysInPeriod: 
       resourceCount: regionResources[region],
     }));
   } else {
-    const spend = (tenantMonthlySpend[tenantId] || 150000) * scaleFactor;
+    const spend = (tenantMonthlySpend[tenantId] || 15000000) * scaleFactor;
     const allocation = tenantRegionAllocation[tenantId] || tenantRegionAllocation['tenant-1'];
     const resourceCount = tenantResourceCounts[tenantId] || 80;
 
@@ -529,30 +547,31 @@ export function generateRegionBreakdown(tenantId: string | 'all', daysInPeriod: 
 // Generate KPIs - all numbers are consistent and verifiable
 // Utilization stats are calculated from actual resource data
 // daysInPeriod scales the spend proportionally (default 30 = monthly)
-export function generateKPIs(tenantId: string | 'all', daysInPeriod: number = 30): DashboardKPIs {
+export function generateKPIs(tenantId: string | 'all', daysInPeriod: number = 30, region: HuaweiRegion | 'all' = 'all'): DashboardKPIs {
   const isAll = tenantId === 'all';
 
   // Scale factor based on days (monthly data is base)
   const scaleFactor = daysInPeriod / 30;
+  const regionScale = getRegionScale(tenantId, region);
 
   const monthlySpend = isAll
     ? TOTAL_ALL_SPEND
-    : tenantMonthlySpend[tenantId] || 150000;
+    : tenantMonthlySpend[tenantId] || 15000000;
 
-  // Scale spend based on date range
-  const totalSpend = monthlySpend * scaleFactor;
+  // Scale spend based on date range and region
+  const totalSpend = monthlySpend * scaleFactor * regionScale;
 
   const monthlyPreviousSpend = isAll
     ? Object.values(tenantPreviousSpend).reduce((a, b) => a + b, 0)
-    : tenantPreviousSpend[tenantId] || 140000;
+    : tenantPreviousSpend[tenantId] || 14000000;
 
-  const previousSpend = monthlyPreviousSpend * scaleFactor;
+  const previousSpend = monthlyPreviousSpend * scaleFactor * regionScale;
 
   const spendGrowthRate = ((totalSpend - previousSpend) / previousSpend) * 100;
 
   const totalBudget = isAll
     ? mockTenants.reduce((sum, t) => sum + t.budget, 0)
-    : mockTenants.find(t => t.id === tenantId)?.budget || 200000;
+    : mockTenants.find(t => t.id === tenantId)?.budget || 20000000;
 
   // Budget usage is based on monthly budget, but scaled spend
   const budgetUsed = (totalSpend / (totalBudget * scaleFactor)) * 100;
@@ -621,7 +640,7 @@ export function generateKPIs(tenantId: string | 'all', daysInPeriod: number = 30
 }
 
 // Generate recommendations - fixed data that makes sense
-export function generateRecommendations(tenantId: string | 'all'): Recommendation[] {
+export function generateRecommendations(tenantId: string | 'all', region: HuaweiRegion | 'all' = 'all'): Recommendation[] {
   const recommendations: Recommendation[] = [
     {
       id: 'rec-1',
@@ -632,8 +651,8 @@ export function generateRecommendations(tenantId: string | 'all'): Recommendatio
       resourceId: 'ecs-prod-web-01',
       resourceName: 'ecs-prod-web-01',
       service: 'ECS',
-      currentCost: 458.50,
-      projectedSavings: 183.40,
+      currentCost: 45850.00,
+      projectedSavings: 18340.00,
       impact: 'high',
       effort: 'easy',
       status: 'new',
@@ -647,8 +666,8 @@ export function generateRecommendations(tenantId: string | 'all'): Recommendatio
       resourceId: 'rds-staging-db',
       resourceName: 'rds-staging-db',
       service: 'RDS',
-      currentCost: 324.00,
-      projectedSavings: 324.00,
+      currentCost: 32400.00,
+      projectedSavings: 32400.00,
       impact: 'high',
       effort: 'easy',
       status: 'new',
@@ -662,8 +681,8 @@ export function generateRecommendations(tenantId: string | 'all'): Recommendatio
       resourceId: 'ecs-cluster-prod',
       resourceName: 'Production ECS Cluster',
       service: 'ECS',
-      currentCost: 2840.00,
-      projectedSavings: 994.00,
+      currentCost: 284000.00,
+      projectedSavings: 99400.00,
       impact: 'high',
       effort: 'moderate',
       status: 'new',
@@ -677,8 +696,8 @@ export function generateRecommendations(tenantId: string | 'all'): Recommendatio
       resourceId: 'obs-bucket-archive',
       resourceName: 'obs-bucket-archive',
       service: 'OBS',
-      currentCost: 156.00,
-      projectedSavings: 62.40,
+      currentCost: 15600.00,
+      projectedSavings: 6240.00,
       impact: 'medium',
       effort: 'easy',
       status: 'in_progress',
@@ -692,8 +711,8 @@ export function generateRecommendations(tenantId: string | 'all'): Recommendatio
       resourceId: 'cdn-domain-main',
       resourceName: 'cdn-domain-main',
       service: 'CDN',
-      currentCost: 890.00,
-      projectedSavings: 356.00,
+      currentCost: 89000.00,
+      projectedSavings: 35600.00,
       impact: 'medium',
       effort: 'moderate',
       status: 'new',
@@ -707,8 +726,8 @@ export function generateRecommendations(tenantId: string | 'all'): Recommendatio
       resourceId: 'rds-prod-primary',
       resourceName: 'rds-prod-primary',
       service: 'RDS',
-      currentCost: 1240.00,
-      projectedSavings: 372.00,
+      currentCost: 124000.00,
+      projectedSavings: 37200.00,
       impact: 'high',
       effort: 'complex',
       status: 'new',
@@ -722,8 +741,8 @@ export function generateRecommendations(tenantId: string | 'all'): Recommendatio
       resourceId: 'evs-unattached-group',
       resourceName: 'Unattached EVS Volumes',
       service: 'EVS',
-      currentCost: 128.00,
-      projectedSavings: 128.00,
+      currentCost: 12800.00,
+      projectedSavings: 12800.00,
       impact: 'medium',
       effort: 'easy',
       status: 'new',
@@ -737,8 +756,8 @@ export function generateRecommendations(tenantId: string | 'all'): Recommendatio
       resourceId: 'dcs-redis-prod',
       resourceName: 'dcs-redis-prod',
       service: 'DCS',
-      currentCost: 385.00,
-      projectedSavings: 192.50,
+      currentCost: 38500.00,
+      projectedSavings: 19250.00,
       impact: 'medium',
       effort: 'easy',
       status: 'new',
@@ -752,8 +771,8 @@ export function generateRecommendations(tenantId: string | 'all'): Recommendatio
       resourceId: 'gaussdb-cluster',
       resourceName: 'gaussdb-cluster',
       service: 'GaussDB',
-      currentCost: 2100.00,
-      projectedSavings: 525.00,
+      currentCost: 210000.00,
+      projectedSavings: 52500.00,
       impact: 'high',
       effort: 'moderate',
       status: 'new',
@@ -767,19 +786,28 @@ export function generateRecommendations(tenantId: string | 'all'): Recommendatio
       resourceId: 'nat-gateway-group',
       resourceName: 'VPC NAT Gateways',
       service: 'NAT',
-      currentCost: 245.00,
-      projectedSavings: 122.50,
+      currentCost: 24500.00,
+      projectedSavings: 12250.00,
       impact: 'low',
       effort: 'moderate',
       status: 'new',
     },
   ];
 
-  if (tenantId !== 'all') {
-    return recommendations.filter(r => r.tenantId === tenantId);
+  let filtered = tenantId !== 'all'
+    ? recommendations.filter(r => r.tenantId === tenantId)
+    : recommendations;
+
+  // When a specific region is selected, only include recommendations for tenants
+  // that have allocation in that region
+  if (region !== 'all') {
+    filtered = filtered.filter(r => {
+      const alloc = tenantRegionAllocation[r.tenantId];
+      return alloc && (alloc[region] || 0) > 0;
+    });
   }
 
-  return recommendations;
+  return filtered;
 }
 
 // =====================================================
@@ -787,11 +815,71 @@ export function generateRecommendations(tenantId: string | 'all'): Recommendatio
 // Deterministic VDC tree for each tenant
 // =====================================================
 
+// Per-tenant VDC naming to make each tenant's hierarchy unique
+const tenantVDCNames: Record<string, { l1: string; l2: string[]; l3: Record<string, string[]>; l4: Record<string, string[]> }> = {
+  'tenant-1': {
+    l1: 'Dangote Enterprise VDC',
+    l2: ['Manufacturing IT', 'Supply Chain Ops', 'Corporate Finance'],
+    l3: { 'Manufacturing IT': ['Plant Systems', 'ERP Platform'], 'Supply Chain Ops': ['Logistics Hub'] },
+    l4: { 'Plant Systems': ['SCADA Team', 'IoT Sensors'] },
+  },
+  'tenant-2': {
+    l1: 'MTN Digital VDC',
+    l2: ['Network Engineering', 'Digital Services', 'Business Systems'],
+    l3: { 'Network Engineering': ['Core Network', '5G Platform'], 'Digital Services': ['MoMo Platform'] },
+    l4: { 'Core Network': ['NOC Team', 'RAN Ops'] },
+  },
+  'tenant-3': {
+    l1: 'Flutterwave Platform VDC',
+    l2: ['Payment Processing', 'Risk & Compliance', 'Developer Platform'],
+    l3: { 'Payment Processing': ['Gateway Core', 'Settlement Engine'], 'Risk & Compliance': ['Fraud Detection'] },
+    l4: { 'Gateway Core': ['API Team', 'Routing Engine'] },
+  },
+  'tenant-4': {
+    l1: 'Safaricom Cloud VDC',
+    l2: ['M-PESA Infrastructure', 'Enterprise Solutions', 'Consumer Digital'],
+    l3: { 'M-PESA Infrastructure': ['Transaction Engine', 'Agent Network'], 'Enterprise Solutions': ['B2B Platform'] },
+    l4: { 'Transaction Engine': ['Core Processing', 'Reconciliation'] },
+  },
+  'tenant-5': {
+    l1: 'Standard Bank VDC',
+    l2: ['Core Banking', 'Digital Channels', 'Risk Management'],
+    l3: { 'Core Banking': ['Lending Platform', 'Deposits System'], 'Digital Channels': ['Mobile Banking'] },
+    l4: { 'Lending Platform': ['Credit Scoring', 'Loan Origination'] },
+  },
+  'tenant-6': {
+    l1: 'Andela Engineering VDC',
+    l2: ['Learning Platform', 'Talent Ops', 'Engineering Tools'],
+    l3: { 'Learning Platform': ['Course Engine', 'Assessment Hub'], 'Talent Ops': ['Matching Service'] },
+    l4: { 'Course Engine': ['Content Delivery', 'Lab Environments'] },
+  },
+  'tenant-7': {
+    l1: 'Jumia Commerce VDC',
+    l2: ['Marketplace Platform', 'Logistics Tech', 'Seller Tools'],
+    l3: { 'Marketplace Platform': ['Product Catalog', 'Order Management'], 'Logistics Tech': ['Delivery Tracking'] },
+    l4: { 'Product Catalog': ['Search Engine', 'Recommendation AI'] },
+  },
+  'tenant-8': {
+    l1: 'Interswitch Gateway VDC',
+    l2: ['Switch Infrastructure', 'Card Processing', 'Value Added Services'],
+    l3: { 'Switch Infrastructure': ['Transaction Switch', 'Settlement Core'], 'Card Processing': ['Issuing Platform'] },
+    l4: { 'Transaction Switch': ['Real-time Engine', 'Batch Processing'] },
+  },
+};
+
+const defaultVDCNames = {
+  l1: 'Enterprise VDC',
+  l2: ['IT Division', 'Operations', 'Finance'],
+  l3: { 'IT Division': ['Infrastructure', 'Development'], 'Operations': ['Production'] } as Record<string, string[]>,
+  l4: { 'Infrastructure': ['Network Team', 'Storage Team'] } as Record<string, string[]>,
+};
+
 // Generate a deterministic VDC hierarchy for a tenant
 // Uses seeded random for consistency across renders
 export function generateVDCHierarchy(tenantId: string, tenantBudget: number): VDCNode {
   const tenantIndex = mockTenants.findIndex(t => t.id === tenantId);
   const seed = (tenantIndex + 1) * 137;
+  const names = tenantVDCNames[tenantId] || defaultVDCNames;
 
   const l1Budget = tenantBudget;
   const l1SpendRatio = 0.7 + seededRandom(seed) * 0.2;
@@ -836,9 +924,21 @@ export function generateVDCHierarchy(tenantId: string, tenantBudget: number): VD
     return v > 0.5 ? seededRandom(s + 1) * 15 : -seededRandom(s + 2) * 10;
   };
 
+  const l2Names = names.l2;
+  const l3Map = names.l3;
+  const l4Map = names.l4;
+
+  // Build L3 children for first L2
+  const firstL2L3Names = l3Map[l2Names[0]] || ['Sub-dept A', 'Sub-dept B'];
+  const firstL3Name = firstL2L3Names[0];
+  const l4Names = l4Map[firstL3Name] || ['Team Alpha', 'Team Beta'];
+
+  // Build L3 children for second L2
+  const secondL2L3Names = l3Map[l2Names[1]] || ['Operations Core'];
+
   return {
     id: `${tenantId}-vdc1`,
-    name: 'Enterprise VDC',
+    name: names.l1,
     tenantId,
     level: 'vdc1',
     spend: l1Spend,
@@ -848,7 +948,7 @@ export function generateVDCHierarchy(tenantId: string, tenantBudget: number): VD
     children: [
       {
         id: `${tenantId}-vdc2-1`,
-        name: 'IT Division',
+        name: l2Names[0],
         tenantId,
         level: 'vdc2',
         spend: itSpend,
@@ -858,7 +958,7 @@ export function generateVDCHierarchy(tenantId: string, tenantBudget: number): VD
         children: [
           {
             id: `${tenantId}-vdc3-1`,
-            name: 'Infrastructure',
+            name: firstL2L3Names[0],
             tenantId,
             level: 'vdc3',
             spend: infraSpend,
@@ -868,7 +968,7 @@ export function generateVDCHierarchy(tenantId: string, tenantBudget: number): VD
             children: [
               {
                 id: `${tenantId}-vdc4-1`,
-                name: 'Network Team',
+                name: l4Names[0],
                 tenantId,
                 level: 'vdc4',
                 spend: networkSpend,
@@ -878,7 +978,7 @@ export function generateVDCHierarchy(tenantId: string, tenantBudget: number): VD
               },
               {
                 id: `${tenantId}-vdc4-2`,
-                name: 'Storage Team',
+                name: l4Names[1] || 'Team B',
                 tenantId,
                 level: 'vdc4',
                 spend: storageSpend,
@@ -890,7 +990,7 @@ export function generateVDCHierarchy(tenantId: string, tenantBudget: number): VD
           },
           {
             id: `${tenantId}-vdc3-2`,
-            name: 'Development',
+            name: firstL2L3Names[1] || 'Development',
             tenantId,
             level: 'vdc3',
             spend: devSpend,
@@ -902,7 +1002,7 @@ export function generateVDCHierarchy(tenantId: string, tenantBudget: number): VD
       },
       {
         id: `${tenantId}-vdc2-2`,
-        name: 'Operations',
+        name: l2Names[1],
         tenantId,
         level: 'vdc2',
         spend: opsSpend,
@@ -912,7 +1012,7 @@ export function generateVDCHierarchy(tenantId: string, tenantBudget: number): VD
         children: [
           {
             id: `${tenantId}-vdc3-3`,
-            name: 'Production',
+            name: secondL2L3Names[0] || 'Production',
             tenantId,
             level: 'vdc3',
             spend: prodSpend,
@@ -924,7 +1024,7 @@ export function generateVDCHierarchy(tenantId: string, tenantBudget: number): VD
       },
       {
         id: `${tenantId}-vdc2-3`,
-        name: 'Finance',
+        name: l2Names[2],
         tenantId,
         level: 'vdc2',
         spend: finSpend,
@@ -982,7 +1082,7 @@ const allTags = ['production', 'staging', 'critical', 'auto-scaled', 'backup', '
 
 // Generate resources with VARIED utilization data
 // Creates a realistic distribution: some underutilized, some optimal, some high
-export function generateResources(tenantId: string | 'all'): Resource[] {
+export function generateResources(tenantId: string | 'all', selectedRegion: HuaweiRegion | 'all' = 'all'): Resource[] {
   const resources: Resource[] = [];
 
   const tenantsToProcess = tenantId === 'all'
@@ -1107,15 +1207,20 @@ export function generateResources(tenantId: string | 'all'): Resource[] {
     }
   });
 
+  // Filter by region if a specific region is selected
+  if (selectedRegion !== 'all') {
+    return resources.filter(r => r.region === selectedRegion);
+  }
+
   return resources;
 }
 
 // Tenant summaries for comparison view - uses consistent KPI data
-export function generateTenantSummaries(): TenantSummary[] {
+export function generateTenantSummaries(region: HuaweiRegion | 'all' = 'all'): TenantSummary[] {
   return mockTenants.map(tenant => {
-    const kpis = generateKPIs(tenant.id);
-    const services = generateServiceBreakdown(tenant.id);
-    const recommendations = generateRecommendations(tenant.id);
+    const kpis = generateKPIs(tenant.id, 30, region);
+    const services = generateServiceBreakdown(tenant.id, 30, region);
+    const recommendations = generateRecommendations(tenant.id, region);
 
     return {
       tenant,

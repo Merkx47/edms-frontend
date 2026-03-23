@@ -31,11 +31,11 @@ import {
 // VDC type styling - using consistent primary/muted theme colors for tree
 // Chart colors are separate for better visibility
 const vdcConfig = {
-  vdc1: { bg: 'bg-primary/5 dark:bg-primary/10', border: 'border-primary/30 dark:border-primary/40', text: 'text-primary dark:text-primary' },
-  vdc2: { bg: 'bg-muted/50 dark:bg-muted/30', border: 'border-border', text: 'text-foreground' },
-  vdc3: { bg: 'bg-muted/30 dark:bg-muted/20', border: 'border-border/70', text: 'text-foreground/90' },
-  vdc4: { bg: 'bg-muted/20 dark:bg-muted/15', border: 'border-border/50', text: 'text-foreground/80' },
-  vdc5: { bg: 'bg-muted/10 dark:bg-muted/10', border: 'border-border/30', text: 'text-foreground/70' },
+  vdc1: { bg: 'bg-green-50 dark:bg-green-950/30', border: 'border-green-400 dark:border-green-600', text: 'text-green-700 dark:text-green-400', color: 'bg-green-400' },
+  vdc2: { bg: 'bg-amber-50 dark:bg-amber-950/30', border: 'border-amber-400 dark:border-amber-600', text: 'text-amber-700 dark:text-amber-400', color: 'bg-amber-400' },
+  vdc3: { bg: 'bg-cyan-50 dark:bg-cyan-950/30', border: 'border-cyan-400 dark:border-cyan-600', text: 'text-cyan-700 dark:text-cyan-400', color: 'bg-cyan-400' },
+  vdc4: { bg: 'bg-pink-50 dark:bg-pink-950/30', border: 'border-pink-400 dark:border-pink-600', text: 'text-pink-700 dark:text-pink-400', color: 'bg-pink-400' },
+  vdc5: { bg: 'bg-indigo-50 dark:bg-indigo-950/30', border: 'border-indigo-400 dark:border-indigo-600', text: 'text-indigo-700 dark:text-indigo-400', color: 'bg-indigo-400' },
 };
 
 // Distinct colors for charts - clear differentiation between VDC levels
@@ -143,6 +143,14 @@ function generateAccessUsers(tenantId: string) {
 // Use flattenVDCTree imported from mock-data
 
 // VDC Tree Node Component
+const levelLabels: Record<string, string> = {
+  vdc1: 'L1 - Enterprise',
+  vdc2: 'L2 - Division',
+  vdc3: 'L3 - Department',
+  vdc4: 'L4 - Team',
+  vdc5: 'L5 - Project',
+};
+
 function VDCTreeNode({
   node,
   depth = 0,
@@ -152,81 +160,110 @@ function VDCTreeNode({
   depth?: number;
   currency: string;
 }) {
-  const [expanded, setExpanded] = useState(depth < 2);
+  const [expanded, setExpanded] = useState(depth < 3);
   const config = vdcConfig[node.level];
   const hasChildren = node.children && node.children.length > 0;
 
-  const levelLabels: Record<string, string> = {
-    vdc1: 'L1 - Enterprise',
-    vdc2: 'L2 - Division',
-    vdc3: 'L3 - Department',
-    vdc4: 'L4 - Team',
-    vdc5: 'L5 - Project',
-  };
-
   return (
-    <div className="relative">
+    <div className="flex flex-col items-center">
+      {/* Node box — matches guide standard */}
       <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
         className={cn(
-          "p-3 rounded-lg border cursor-pointer transition-all",
+          "px-4 py-2.5 rounded-lg border-2 bg-background cursor-pointer transition-all min-w-[160px] text-center",
           config.border,
-          config.bg,
           "hover:shadow-md"
         )}
         onClick={() => hasChildren && setExpanded(!expanded)}
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-2">
-            <MdLayers className={cn("h-4 w-4 mt-0.5", config.text)} />
-            <div>
-              <div className="flex items-center gap-2">
-                <h4 className={cn("font-medium text-sm", config.text)}>{node.name}</h4>
-                <Badge variant="outline" className="text-[9px] px-1.5 py-0">
-                  {levelLabels[node.level]}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <MdAccountBalanceWallet className="h-3 w-3" />
-                  {formatCompactCurrency(node.spend, currency as any)}
-                </span>
-                <span className="flex items-center gap-1">
-                  <MdStorage className="h-3 w-3" />
-                  {node.resources} resources
-                </span>
-              </div>
-            </div>
+        <div className="flex items-center gap-2 justify-center">
+          <MdLayers className={cn("h-4 w-4 flex-shrink-0", config.text)} />
+          <div>
+            <p className={cn("text-xs font-semibold", config.text)}>{node.name}</p>
+            <p className="text-[10px] text-muted-foreground">{levelLabels[node.level]}</p>
           </div>
-
           {hasChildren && (
             <MdExpandMore className={cn(
-              "h-4 w-4 transition-transform text-muted-foreground",
+              "h-3.5 w-3.5 transition-transform text-muted-foreground ml-1",
               expanded && "rotate-180"
             )} />
           )}
         </div>
-
+        <div className="flex items-center gap-3 mt-1.5 justify-center text-[10px] text-muted-foreground">
+          <span className="flex items-center gap-0.5">
+            <MdAccountBalanceWallet className="h-3 w-3" />
+            {formatCompactCurrency(node.spend, currency as any)}
+          </span>
+          <span className="flex items-center gap-0.5">
+            <MdStorage className="h-3 w-3" />
+            {node.resources}
+          </span>
+        </div>
       </motion.div>
 
-      {/* Children */}
+      {/* Vertical connector + children */}
       <AnimatePresence>
         {hasChildren && expanded && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="ml-6 mt-2 space-y-2 pl-4 border-l-2 border-dashed border-muted-foreground/30"
+            className="flex flex-col items-center w-full"
           >
-            {node.children?.map((child) => (
-              <VDCTreeNode
-                key={child.id}
-                node={child}
-                depth={depth + 1}
-                currency={currency}
-              />
-            ))}
+            {/* Vertical line down from parent */}
+            <div className="w-0.5 h-5 bg-border" />
+
+            {/* Children row with proper connectors */}
+            <div className="relative">
+              {/* Horizontal connector bar spanning from first child center to last child center */}
+              {node.children!.length > 1 && (
+                <div className="absolute top-0 left-0 right-0 flex">
+                  <div className="flex-1" />
+                  {node.children!.map((_, i) => (
+                    <div key={i} className="flex-1 flex justify-center">
+                      {i === 0 ? null : null}
+                    </div>
+                  ))}
+                  <div className="flex-1" />
+                </div>
+              )}
+
+              <table className="border-collapse mx-auto">
+                {/* Horizontal bar row */}
+                {node.children!.length > 1 && (
+                  <tbody>
+                    <tr>
+                      {node.children!.map((_, i) => (
+                        <td key={`bar-${i}`} className="p-0">
+                          <div className="flex">
+                            <div className={cn("h-0.5 flex-1", i === 0 ? "bg-transparent" : "bg-border")} />
+                            <div className={cn("h-0.5 flex-1", i === node.children!.length - 1 ? "bg-transparent" : "bg-border")} />
+                          </div>
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                )}
+                {/* Vertical stubs + child nodes */}
+                <tbody>
+                  <tr className="align-top">
+                    {node.children!.map((child) => (
+                      <td key={child.id} className="px-2 pt-0 pb-0 align-top">
+                        <div className="flex flex-col items-center">
+                          <div className="w-0.5 h-4 bg-border" />
+                          <VDCTreeNode
+                            node={child}
+                            depth={depth + 1}
+                            currency={currency}
+                          />
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -278,7 +315,7 @@ function UtilizationRing({ value, label, color }: { value: number; label: string
 export default function TenantDetail() {
   const [, params] = useRoute('/tenant/:id');
   const [, setLocation] = useLocation();
-  const { currency } = useFinOpsStore();
+  const { currency, selectedRegion } = useFinOpsStore();
   const { tenants } = useDataStore();
 
   const tenantId = params?.id;
@@ -297,14 +334,14 @@ export default function TenantDetail() {
   // Resources for this tenant
   const resources = useMemo(() => {
     if (!tenant) return [];
-    return generateResources(tenant.id);
-  }, [tenant]);
+    return generateResources(tenant.id, selectedRegion);
+  }, [tenant, selectedRegion]);
 
   // Cost trend data
   const costTrend = useMemo(() => {
     if (!tenant) return [];
-    return generateCostTrend(tenant.id, 30);
-  }, [tenant]);
+    return generateCostTrend(tenant.id, 30, selectedRegion);
+  }, [tenant, selectedRegion]);
 
   // Show logs
   const activityLogs = useMemo(() => {
@@ -602,20 +639,22 @@ export default function TenantDetail() {
                 </CardHeader>
                 <CardContent>
                   {/* Legend */}
-                  <div className="flex flex-wrap gap-3 mb-6 p-3 rounded-lg bg-muted/30">
+                  <div className="flex flex-wrap gap-4 mb-6 p-3 rounded-lg bg-muted/30">
                     {Object.entries(vdcConfig).map(([level, config]) => (
                       <div key={level} className="flex items-center gap-1.5">
-                        <div className={cn("w-3 h-3 rounded", config.bg, config.border, "border")} />
-                        <span className="text-xs text-muted-foreground">
-                          {level.toUpperCase().replace('VDC', 'VDC L')}
+                        <div className={cn("w-3 h-3 rounded border-2", config.border)} />
+                        <span className="text-xs text-muted-foreground font-medium">
+                          {levelLabels[level] || level}
                         </span>
                       </div>
                     ))}
                   </div>
 
-                  {/* VDC Tree */}
-                  <div className="space-y-3">
-                    <VDCTreeNode node={vdcHierarchy} currency={currency} />
+                  {/* VDC Tree — horizontal layout matching guide standard */}
+                  <div className="overflow-x-auto pb-4">
+                    <div className="min-w-fit flex justify-center py-4">
+                      <VDCTreeNode node={vdcHierarchy} currency={currency} />
+                    </div>
                   </div>
                 </CardContent>
               </Card>

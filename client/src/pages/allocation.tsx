@@ -20,14 +20,14 @@ const COLORS = [
 ];
 
 export default function Allocation() {
-  const { currency, selectedTenantId } = useFinOpsStore();
+  const { currency, selectedTenantId, selectedRegion } = useFinOpsStore();
   const { resolvedTheme } = useTheme();
   const textColor = resolvedTheme === 'dark' ? 'white' : 'black';
   const [showAllServices, setShowAllServices] = useState(false);
   const [showAllTenants, setShowAllTenants] = useState(false);
 
-  const serviceBreakdown = useMemo(() => generateServiceBreakdown(selectedTenantId), [selectedTenantId]);
-  const tenantSummaries = useMemo(() => generateTenantSummaries(), []);
+  const serviceBreakdown = useMemo(() => generateServiceBreakdown(selectedTenantId, 30, selectedRegion), [selectedTenantId, selectedRegion]);
+  const tenantSummaries = useMemo(() => generateTenantSummaries(selectedRegion), [selectedRegion]);
 
   const serviceTreemapData = serviceBreakdown.slice(0, 12).map((s, i) => ({
     name: s.service,

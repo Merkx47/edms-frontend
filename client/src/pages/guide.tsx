@@ -107,7 +107,7 @@ function Organogram() {
           <div key={type} className="flex items-center gap-1.5">
             <div className={cn("w-3 h-3 rounded border-2", config.bg, config.border)} />
             <span className="text-muted-foreground capitalize">
-              {type.startsWith('vdc') ? `VDC L${type.slice(3)}` : type}
+              {type.startsWith('vdc') ? `VDC L${type.slice(3)}` : type === 'zone' ? 'region' : type}
             </span>
           </div>
         ))}
@@ -118,10 +118,10 @@ function Organogram() {
         <div className="min-w-[900px] flex flex-col items-center">
           {/* ROOT */}
           <NodeBox label="ROOT (ManageOne)" sublabel="Cloud Platform Admin" type="root" />
-          <VLine label="manages Zones" />
+          <VLine label="manages Regions" />
 
           {/* ZONE */}
-          <NodeBox label="Zone A - Lagos DC" sublabel="Availability Zone" type="zone" />
+          <NodeBox label="Region - Lagos MTN-1" sublabel="Region" type="zone" />
 
           {/* Zone to Tenants label */}
           <div className="flex flex-col items-center">
@@ -251,15 +251,15 @@ export default function Guide() {
   const faqs = [
     {
       question: "What is the Root level in Huawei Cloud Stack?",
-      answer: "The Root level (ManageOne) is the top-level cloud platform administrator. It manages global policies, billing, monitoring, and has visibility across all zones, tenants, and VDCs. This is where cloud platform administrators configure the overall infrastructure."
+      answer: "The Root level (ManageOne) is the top-level cloud platform administrator. It manages global policies, billing, monitoring, and has visibility across all regions, tenants, and VDCs. This is where cloud platform administrators configure the overall infrastructure."
     },
     {
-      question: "What are Availability Zones (AZs)?",
-      answer: "Zones or Availability Zones are physical or logical separations of infrastructure within a data center or across data centers. They provide high availability and disaster recovery capabilities. A single Root can have multiple zones (e.g., Lagos DC, Abuja DC), and each zone can host multiple tenants."
+      question: "What are Regions?",
+      answer: "Regions are physical or logical separations of infrastructure within a data center or across data centers. They provide high availability and disaster recovery capabilities. A single Root can have multiple regions (e.g., Lagos MTN-1, AF South), and each region can host multiple tenants."
     },
     {
       question: "What is a Tenant?",
-      answer: "A Tenant represents an isolated organization or enterprise within the cloud platform. Each tenant has its own administrators, quotas, and resources that are logically separated from other tenants. Multiple tenants can exist within the same zone, and a tenant can span multiple zones for disaster recovery."
+      answer: "A Tenant represents an isolated organization or enterprise within the cloud platform. Each tenant has its own administrators, quotas, and resources that are logically separated from other tenants. Multiple tenants can exist within the same region, and a tenant can span multiple regions for disaster recovery."
     },
     {
       question: "What are VDC Levels 1-5?",
@@ -278,12 +278,12 @@ export default function Guide() {
       answer: "Each level can only allocate UP TO what its parent allocated:\n\n• Child VDC quota ≤ Parent VDC quota\n• Sum of children quotas can exceed parent (overcommitment)\n• Quotas cascade: Compute (vCPU, RAM), Storage (EVS, OBS), Network (VPCs, EIPs)"
     },
     {
-      question: "Can a Tenant span multiple Zones?",
-      answer: "Yes, a tenant can have presence in multiple zones for high availability and disaster recovery. For example, 'Bank Corp' could have resources in both Lagos (primary) and Abuja (DR) zones."
+      question: "Can a Tenant span multiple Regions?",
+      answer: "Yes, a tenant can have presence in multiple regions for high availability and disaster recovery. For example, 'Bank Corp' could have resources in both Lagos MTN-1 (primary) and AF South (DR) regions."
     },
     {
       question: "What admin roles exist at each level?",
-      answer: "• Cloud Admin: Root/ManageOne level - platform-wide control\n• Infrastructure Admin: Zone level - physical infrastructure\n• Tenant Admin: Tenant level - organization-wide\n• VDC Admin: Each VDC level has its own admin with scope limited to that VDC and below\n• Users: Deploy and manage resources within their allocated VDC"
+      answer: "• Cloud Admin: Root/ManageOne level - platform-wide control\n• Infrastructure Admin: Region level - physical infrastructure\n• Tenant Admin: Tenant level - organization-wide\n• VDC Admin: Each VDC level has its own admin with scope limited to that VDC and below\n• Users: Deploy and manage resources within their allocated VDC"
     },
     {
       question: "How does this relate to FinOps?",
@@ -343,7 +343,7 @@ export default function Guide() {
                 <tbody>
                   {[
                     { level: 'Root', name: 'ManageOne', purpose: 'Platform management', admin: 'Cloud Admin', resources: 'N/A', color: 'bg-red-500' },
-                    { level: 'Zone', name: 'AZ', purpose: 'Physical separation', admin: 'Infra Admin', resources: 'N/A', color: 'bg-blue-500' },
+                    { level: 'Region', name: 'Region', purpose: 'Physical separation', admin: 'Infra Admin', resources: 'N/A', color: 'bg-blue-500' },
                     { level: 'Tenant', name: 'Organization', purpose: 'Enterprise isolation', admin: 'Tenant Admin', resources: 'N/A', color: 'bg-purple-500' },
                     { level: 'VDC L1', name: 'Enterprise', purpose: 'Top quota pool', admin: 'Enterprise Admin', resources: 'Yes', color: 'bg-green-500' },
                     { level: 'VDC L2', name: 'Division', purpose: 'Business unit', admin: 'Division Admin', resources: 'Yes', color: 'bg-amber-500' },

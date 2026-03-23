@@ -46,7 +46,7 @@ export default function TagGroupForm() {
   const editId = editParams?.id;
 
   const { tagGroups, addTagGroup, updateTagGroup, getTagGroup } = useDataStore();
-  const { selectedTenantId } = useFinOpsStore();
+  const { selectedTenantId, selectedRegion } = useFinOpsStore();
 
   // Load existing group if editing
   const existingGroup = editId ? getTagGroup(editId) : undefined;
@@ -84,7 +84,7 @@ export default function TagGroupForm() {
   // VDC and resource data for scope selector
   const allVDCHierarchies = useMemo(() => generateAllVDCHierarchies(selectedTenantId), [selectedTenantId]);
   const allVDCs = useMemo(() => allVDCHierarchies.flatMap(h => flattenVDCTree(h)), [allVDCHierarchies]);
-  const allResources = useMemo(() => generateResources(selectedTenantId), [selectedTenantId]);
+  const allResources = useMemo(() => generateResources(selectedTenantId, selectedRegion), [selectedTenantId, selectedRegion]);
 
   const filteredVDCs = useMemo(() => {
     if (!scopeSearch) return allVDCs;

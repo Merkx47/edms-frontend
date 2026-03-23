@@ -274,7 +274,7 @@ const PIE_COLORS = ['#E53935', '#FB8C00', '#8E24AA', '#3949AB'];
 // MAIN COMPONENT
 // ============================================================
 export default function WasteDetection() {
-  const { currency, selectedTenantId } = useFinOpsStore();
+  const { currency, selectedTenantId, selectedRegion } = useFinOpsStore();
 
   // State
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
@@ -284,8 +284,8 @@ export default function WasteDetection() {
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
 
-  // Generate all resources from the shared data model, filtered by tenant
-  const allResources = useMemo(() => generateResources(selectedTenantId), [selectedTenantId]);
+  // Generate all resources from the shared data model, filtered by tenant and region
+  const allResources = useMemo(() => generateResources(selectedTenantId, selectedRegion), [selectedTenantId, selectedRegion]);
 
   // Derive wasted resources from the real resource pool
   const allWastedResources = useMemo(() => classifyWaste(allResources), [allResources]);

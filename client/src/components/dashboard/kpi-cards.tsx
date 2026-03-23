@@ -83,11 +83,11 @@ function KPICard({
 }
 
 export function KPICards() {
-  const { currency, selectedTenantId, dateRange } = useFinOpsStore();
+  const { currency, selectedTenantId, selectedRegion, dateRange } = useFinOpsStore();
 
   const daysInPeriod = useMemo(() => getDaysFromPreset(dateRange.preset), [dateRange.preset]);
 
-  const kpis = useMemo(() => generateKPIs(selectedTenantId, daysInPeriod), [selectedTenantId, daysInPeriod]);
+  const kpis = useMemo(() => generateKPIs(selectedTenantId, daysInPeriod, selectedRegion), [selectedTenantId, daysInPeriod, selectedRegion]);
 
   // Get a label for the time period
   const periodLabel = useMemo(() => {
@@ -141,11 +141,11 @@ export function KPICards() {
 }
 
 export function SecondaryKPIs() {
-  const { currency, selectedTenantId, dateRange } = useFinOpsStore();
+  const { currency, selectedTenantId, selectedRegion, dateRange } = useFinOpsStore();
 
   const daysInPeriod = useMemo(() => getDaysFromPreset(dateRange.preset), [dateRange.preset]);
 
-  const kpis = useMemo(() => generateKPIs(selectedTenantId, daysInPeriod), [selectedTenantId, daysInPeriod]);
+  const kpis = useMemo(() => generateKPIs(selectedTenantId, daysInPeriod, selectedRegion), [selectedTenantId, daysInPeriod, selectedRegion]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

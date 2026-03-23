@@ -36,6 +36,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFinOpsStore, formatCurrency, formatCompactCurrency } from '@/lib/finops-store';
 import { useDataStore, type RecommendationHistoryEntry } from '@/lib/data-store';
+import { getRegionScale } from '@/lib/mock-data';
 import { serviceInfo, type RecommendationType, type RecommendationImpact, type Recommendation } from '@shared/schema';
 import { useMemo, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
@@ -98,7 +99,7 @@ function formatRelativeTime(timestamp: string): string {
 }
 
 export default function Recommendations() {
-  const { currency, selectedTenantId } = useFinOpsStore();
+  const { currency, selectedTenantId, selectedRegion } = useFinOpsStore();
   const { recommendations, recommendationHistory, implementRecommendation, dismissRecommendation, implementEasyWins } = useDataStore();
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [impactFilter, setImpactFilter] = useState<string>('all');
@@ -108,9 +109,13 @@ export default function Recommendations() {
   const [activeTab, setActiveTab] = useState('recommendations');
 
   const filteredByTenant = useMemo(() => {
-    if (selectedTenantId === 'all') return recommendations;
-    return recommendations.filter(r => r.tenantId === selectedTenantId);
-  }, [recommendations, selectedTenantId]);
+    let filtered = selectedTenantId === 'all' ? recommendations : recommendations.filter(r => r.tenantId === selectedTenantId);
+    // Filter by region — only show recommendations for tenants with allocation in the selected region
+    if (selectedRegion !== 'all') {
+      filtered = filtered.filter(r => getRegionScale(r.tenantId, selectedRegion) > 0);
+    }
+    return filtered;
+  }, [recommendations, selectedTenantId, selectedRegion]);
 
   const filteredRecommendations = useMemo(() => {
     return filteredByTenant.filter(r => {

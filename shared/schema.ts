@@ -34,7 +34,8 @@ export const currencyInfo: Record<Currency, { symbol: string; name: string; flag
 };
 
 // Huawei Cloud Regions
-export type HuaweiRegion = 
+export type HuaweiRegion =
+  | 'lagos-mtn-1'     // Lagos, Nigeria (HCS Private Cloud)
   | 'af-south-1'      // Johannesburg, South Africa
   | 'ap-southeast-1'  // Singapore
   | 'ap-southeast-2'  // Bangkok, Thailand
@@ -47,6 +48,7 @@ export type HuaweiRegion =
   | 'na-mexico-1';    // Mexico City
 
 export const regionNames: Record<HuaweiRegion, string> = {
+  'lagos-mtn-1': 'Lagos MTN-1',
   'af-south-1': 'Africa-Johannesburg',
   'ap-southeast-1': 'AP-Singapore',
   'ap-southeast-2': 'AP-Bangkok',

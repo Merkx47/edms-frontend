@@ -17,11 +17,11 @@ import {
 import { motion } from 'framer-motion';
 
 export function CostTrendChart() {
-  const { currency, selectedTenantId, dateRange } = useFinOpsStore();
+  const { currency, selectedTenantId, selectedRegion, dateRange } = useFinOpsStore();
 
   const daysToShow = useMemo(() => getDaysFromPreset(dateRange.preset), [dateRange.preset]);
 
-  const costTrend = useMemo(() => generateCostTrend(selectedTenantId, daysToShow), [selectedTenantId, daysToShow]);
+  const costTrend = useMemo(() => generateCostTrend(selectedTenantId, daysToShow, selectedRegion), [selectedTenantId, daysToShow, selectedRegion]);
 
   const today = new Date().toISOString().split('T')[0];
   const totalActual = costTrend

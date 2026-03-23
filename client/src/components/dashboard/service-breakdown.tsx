@@ -22,10 +22,10 @@ const CHART_COLORS = [
 ];
 
 export function ServiceBreakdownChart() {
-  const { currency, selectedTenantId, dateRange } = useFinOpsStore();
+  const { currency, selectedTenantId, selectedRegion, dateRange } = useFinOpsStore();
 
   const daysInPeriod = useMemo(() => getDaysFromPreset(dateRange.preset), [dateRange.preset]);
-  const breakdown = useMemo(() => generateServiceBreakdown(selectedTenantId, daysInPeriod), [selectedTenantId, daysInPeriod]);
+  const breakdown = useMemo(() => generateServiceBreakdown(selectedTenantId, daysInPeriod, selectedRegion), [selectedTenantId, daysInPeriod, selectedRegion]);
   const topServices = breakdown.slice(0, 8);
   
   const chartData = topServices.map((item, index) => ({
@@ -131,10 +131,10 @@ export function ServiceBreakdownChart() {
 }
 
 export function ServiceBreakdownTable() {
-  const { currency, selectedTenantId, dateRange } = useFinOpsStore();
+  const { currency, selectedTenantId, selectedRegion, dateRange } = useFinOpsStore();
 
   const daysInPeriod = useMemo(() => getDaysFromPreset(dateRange.preset), [dateRange.preset]);
-  const breakdown = useMemo(() => generateServiceBreakdown(selectedTenantId, daysInPeriod), [selectedTenantId, daysInPeriod]);
+  const breakdown = useMemo(() => generateServiceBreakdown(selectedTenantId, daysInPeriod, selectedRegion), [selectedTenantId, daysInPeriod, selectedRegion]);
 
   return (
     <motion.div
