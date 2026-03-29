@@ -1,1234 +1,318 @@
 import type {
-  Tenant,
-  CostRecord,
-  Resource,
-  Recommendation,
-  DashboardKPIs,
-  CostTrendPoint,
-  ServiceBreakdown,
-  RegionBreakdown,
-  TenantSummary,
-  HuaweiService,
-  HuaweiRegion,
-  RecommendationType,
-  RecommendationImpact,
-  VDCNode,
+  Document, Folder, DocumentVersion, Workflow, WorkflowStep,
+  AuditLogEntry, StaffMember, Notification, DashboardKPIs, Report,
+  Department, DocumentType, DocumentStatus, SecurityClassification,
+  AuditAction, WorkflowStatus, UserRole, StepAction,
 } from '@shared/schema';
 
-// =====================================================
-// CONSISTENT DATA MODEL
-// All numbers are deterministic and add up correctly
-// =====================================================
+// ==================== STAFF ====================
+export const mockStaff: StaffMember[] = [
+  { id: 'u1', fullName: 'Adebayo Ogunlesi', email: 'adebayo.ogunlesi@gov.ng', role: 'admin', department: 'Office of the Governor', isActive: true },
+  { id: 'u2', fullName: 'Ngozi Okafor', email: 'ngozi.okafor@gov.ng', role: 'director', department: 'Ministry of Finance', isActive: true },
+  { id: 'u3', fullName: 'Emeka Nwankwo', email: 'emeka.nwankwo@gov.ng', role: 'manager', department: 'Ministry of Works & Infrastructure', isActive: true },
+  { id: 'u4', fullName: 'Fatima Ibrahim', email: 'fatima.ibrahim@gov.ng', role: 'officer', department: 'Ministry of Health', isActive: true },
+  { id: 'u5', fullName: 'Chidinma Eze', email: 'chidinma.eze@gov.ng', role: 'officer', department: 'Ministry of Education', isActive: true },
+  { id: 'u6', fullName: 'Oluwaseun Adeyemi', email: 'oluwaseun.adeyemi@gov.ng', role: 'director', department: 'Ministry of Justice', isActive: true },
+  { id: 'u7', fullName: 'Aisha Mohammed', email: 'aisha.mohammed@gov.ng', role: 'manager', department: 'Bureau of Public Procurement', isActive: true },
+  { id: 'u8', fullName: 'Tunde Bakare', email: 'tunde.bakare@gov.ng', role: 'officer', department: 'Ministry of Agriculture', isActive: true },
+  { id: 'u9', fullName: 'Blessing Okoro', email: 'blessing.okoro@gov.ng', role: 'viewer', department: 'Auditor General Office', isActive: true },
+  { id: 'u10', fullName: 'Yakubu Danjuma', email: 'yakubu.danjuma@gov.ng', role: 'manager', department: 'Ministry of Commerce & Industry', isActive: true },
+  { id: 'u11', fullName: 'Ifeoma Chukwu', email: 'ifeoma.chukwu@gov.ng', role: 'officer', department: 'Ministry of Environment', isActive: true },
+  { id: 'u12', fullName: 'Abdullahi Suleiman', email: 'abdullahi.suleiman@gov.ng', role: 'director', department: 'Head of Service', isActive: true },
+];
 
-// Nigerian/African context tenant names with FIXED spending data
-// Monthly spend is ~75% of budget on average to show healthy usage
-export const mockTenants: Tenant[] = [
+// ==================== FOLDERS ====================
+export const mockFolders: Folder[] = [
+  { id: 'f1', name: 'Executive Orders', department: 'Office of the Governor', parentId: null, documentCount: 12, createdAt: '2025-01-15' },
+  { id: 'f2', name: 'Budget & Appropriation', department: 'Ministry of Finance', parentId: null, documentCount: 28, createdAt: '2025-01-10' },
+  { id: 'f3', name: 'Infrastructure Projects', department: 'Ministry of Works & Infrastructure', parentId: null, documentCount: 35, createdAt: '2025-02-01' },
+  { id: 'f4', name: 'Health Policies', department: 'Ministry of Health', parentId: null, documentCount: 18, createdAt: '2025-01-20' },
+  { id: 'f5', name: 'Education Circulars', department: 'Ministry of Education', parentId: null, documentCount: 22, createdAt: '2025-03-01' },
+  { id: 'f6', name: 'Legal Opinions', department: 'Ministry of Justice', parentId: null, documentCount: 15, createdAt: '2025-02-15' },
+  { id: 'f7', name: 'Procurement Records', department: 'Bureau of Public Procurement', parentId: null, documentCount: 42, createdAt: '2025-01-05' },
+  { id: 'f8', name: 'Audit Reports', department: 'Auditor General Office', parentId: null, documentCount: 20, createdAt: '2025-03-10' },
+  { id: 'f9', name: 'Agricultural Programs', department: 'Ministry of Agriculture', parentId: null, documentCount: 14, createdAt: '2025-02-20' },
+  { id: 'f10', name: 'Trade & Commerce', department: 'Ministry of Commerce & Industry', parentId: null, documentCount: 11, createdAt: '2025-03-05' },
+];
+
+// ==================== DOCUMENTS ====================
+function makeDate(daysAgo: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  return d.toISOString().split('T')[0];
+}
+
+function makeDateTime(daysAgo: number, hoursAgo = 0): string {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  d.setHours(d.getHours() - hoursAgo);
+  return d.toISOString();
+}
+
+export const mockDocuments: Document[] = [
   {
-    id: 'tenant-1',
-    name: 'Dangote Industries',
-    industry: 'Manufacturing',
-    country: 'Nigeria',
-    contactName: 'Chidi Okonkwo',
-    contactEmail: 'chidi.okonkwo@dangote.com',
-    budget: 25000000,        // Monthly budget
-    efficiencyScore: 78,
-    status: 'active',
+    id: 'doc-001', title: '2026 Fiscal Year Budget Proposal', description: 'Comprehensive budget proposal for the 2026 fiscal year covering all ministries and agencies.',
+    type: 'budget_document', department: 'Ministry of Finance', status: 'approved', securityClassification: 'confidential',
+    referenceNumber: 'MOF/BUD/2026/001', version: 3, fileSize: 4500000, fileType: 'pdf', tags: ['budget', '2026', 'fiscal'],
+    metadata: { 'fiscal_year': '2026', 'total_amount': '₦850B' }, createdBy: 'Ngozi Okafor', createdAt: makeDateTime(45),
+    updatedAt: makeDateTime(5), retentionDate: '2036-12-31', parentFolderId: 'f2', checkout: { status: 'available', checkedOutBy: null, checkedOutAt: null },
   },
   {
-    id: 'tenant-2',
-    name: 'MTN Nigeria',
-    industry: 'Telecommunications',
-    country: 'Nigeria',
-    contactName: 'Amaka Eze',
-    contactEmail: 'amaka.eze@mtn.ng',
-    budget: 50000000,
-    efficiencyScore: 85,
-    status: 'active',
+    id: 'doc-002', title: 'Executive Order on Public Service Reform', description: 'Executive directive on restructuring public service delivery across all state agencies.',
+    type: 'memo', department: 'Office of the Governor', status: 'approved', securityClassification: 'restricted',
+    referenceNumber: 'GOV/EO/2026/015', version: 2, fileSize: 1200000, fileType: 'pdf', tags: ['executive order', 'reform', 'public service'],
+    metadata: { 'effective_date': '2026-04-01' }, createdBy: 'Adebayo Ogunlesi', createdAt: makeDateTime(30),
+    updatedAt: makeDateTime(10), retentionDate: '2036-12-31', parentFolderId: 'f1', checkout: { status: 'available', checkedOutBy: null, checkedOutAt: null },
   },
   {
-    id: 'tenant-3',
-    name: 'Flutterwave',
-    industry: 'Fintech',
-    country: 'Nigeria',
-    contactName: 'Oluwaseun Adeyemi',
-    contactEmail: 'oluwaseun@flutterwave.com',
-    budget: 18000000,
-    efficiencyScore: 92,
-    status: 'active',
+    id: 'doc-003', title: 'Lagos-Calabar Coastal Highway Progress Report', description: 'Quarterly progress report on the Lagos-Calabar coastal highway construction project.',
+    type: 'report', department: 'Ministry of Works & Infrastructure', status: 'pending_review', securityClassification: 'internal',
+    referenceNumber: 'MWI/RPT/2026/Q1-003', version: 1, fileSize: 8200000, fileType: 'pdf', tags: ['highway', 'infrastructure', 'progress report'],
+    metadata: { 'project_code': 'LCCH-2024', 'quarter': 'Q1 2026' }, createdBy: 'Emeka Nwankwo', createdAt: makeDateTime(7),
+    updatedAt: makeDateTime(7), retentionDate: '2034-12-31', parentFolderId: 'f3', checkout: { status: 'available', checkedOutBy: null, checkedOutAt: null },
   },
   {
-    id: 'tenant-4',
-    name: 'Safaricom Kenya',
-    industry: 'Telecommunications',
-    country: 'Kenya',
-    contactName: 'Wanjiku Kamau',
-    contactEmail: 'wanjiku.kamau@safaricom.co.ke',
-    budget: 32000000,
-    efficiencyScore: 81,
-    status: 'active',
+    id: 'doc-004', title: 'Primary Healthcare Expansion Policy', description: 'Policy document outlining the expansion of primary healthcare centres across rural LGAs.',
+    type: 'policy', department: 'Ministry of Health', status: 'pending_review', securityClassification: 'internal',
+    referenceNumber: 'MOH/POL/2026/008', version: 1, fileSize: 2300000, fileType: 'pdf', tags: ['healthcare', 'policy', 'PHC', 'rural'],
+    metadata: { 'target_lgas': '45', 'budget': '₦12.5B' }, createdBy: 'Fatima Ibrahim', createdAt: makeDateTime(12),
+    updatedAt: makeDateTime(12), retentionDate: '2036-12-31', parentFolderId: 'f4', checkout: { status: 'available', checkedOutBy: null, checkedOutAt: null },
   },
   {
-    id: 'tenant-5',
-    name: 'Standard Bank SA',
-    industry: 'Banking',
-    country: 'South Africa',
-    contactName: 'Thabo Molefe',
-    contactEmail: 'thabo.molefe@standardbank.co.za',
-    budget: 42000000,
-    efficiencyScore: 75,
-    status: 'active',
+    id: 'doc-005', title: 'UBEC Matching Grant Application 2026', description: 'Application for Universal Basic Education Commission matching grant for state education projects.',
+    type: 'proposal', department: 'Ministry of Education', status: 'draft', securityClassification: 'internal',
+    referenceNumber: 'MOE/GRT/2026/002', version: 1, fileSize: 3100000, fileType: 'docx', tags: ['UBEC', 'grant', 'education'],
+    metadata: { 'grant_amount': '₦5.8B' }, createdBy: 'Chidinma Eze', createdAt: makeDateTime(3),
+    updatedAt: makeDateTime(3), retentionDate: '2031-12-31', parentFolderId: 'f5', checkout: { status: 'available', checkedOutBy: null, checkedOutAt: null },
   },
   {
-    id: 'tenant-6',
-    name: 'Andela',
-    industry: 'Technology',
-    country: 'Nigeria',
-    contactName: 'Ngozi Obi',
-    contactEmail: 'ngozi.obi@andela.com',
-    budget: 15000000,
-    efficiencyScore: 88,
-    status: 'active',
+    id: 'doc-006', title: 'Legal Opinion on Land Use Charge', description: 'Legal advisory opinion on the proposed amendments to the Land Use Charge Law.',
+    type: 'correspondence', department: 'Ministry of Justice', status: 'approved', securityClassification: 'confidential',
+    referenceNumber: 'MOJ/LO/2026/041', version: 1, fileSize: 890000, fileType: 'pdf', tags: ['legal opinion', 'land use', 'charge'],
+    metadata: { 'case_reference': 'LUC/AMD/2026' }, createdBy: 'Oluwaseun Adeyemi', createdAt: makeDateTime(20),
+    updatedAt: makeDateTime(15), retentionDate: '2041-12-31', parentFolderId: 'f6', checkout: { status: 'available', checkedOutBy: null, checkedOutAt: null },
   },
   {
-    id: 'tenant-7',
-    name: 'Jumia Group',
-    industry: 'E-commerce',
-    country: 'Nigeria',
-    contactName: 'Emmanuel Nwosu',
-    contactEmail: 'emmanuel.nwosu@jumia.com',
-    budget: 28000000,
-    efficiencyScore: 72,
-    status: 'active',
+    id: 'doc-007', title: 'Road Construction Contract — Lekki-Epe Expressway Phase 2', description: 'Contract document for the Lekki-Epe Expressway Phase 2 expansion works.',
+    type: 'contract', department: 'Bureau of Public Procurement', status: 'pending_review', securityClassification: 'restricted',
+    referenceNumber: 'BPP/CON/2026/012', version: 2, fileSize: 12400000, fileType: 'pdf', tags: ['contract', 'road', 'Lekki-Epe'],
+    metadata: { 'contractor': 'Julius Berger Nig. Plc', 'contract_value': '₦45.2B' }, createdBy: 'Aisha Mohammed', createdAt: makeDateTime(15),
+    updatedAt: makeDateTime(8), retentionDate: '2041-12-31', parentFolderId: 'f7', checkout: { status: 'available', checkedOutBy: null, checkedOutAt: null },
   },
   {
-    id: 'tenant-8',
-    name: 'Interswitch',
-    industry: 'Fintech',
-    country: 'Nigeria',
-    contactName: 'Chioma Ikenna',
-    contactEmail: 'chioma.ikenna@interswitch.com',
-    budget: 20000000,
-    efficiencyScore: 84,
-    status: 'active',
+    id: 'doc-008', title: 'Q4 2025 Financial Audit Report', description: 'Quarterly financial audit report covering all state ministries for Q4 2025.',
+    type: 'report', department: 'Auditor General Office', status: 'approved', securityClassification: 'confidential',
+    referenceNumber: 'AGO/AUD/2025/Q4', version: 1, fileSize: 6700000, fileType: 'pdf', tags: ['audit', 'financial', 'Q4 2025'],
+    metadata: { 'period': 'Q4 2025', 'findings': '12 observations' }, createdBy: 'Blessing Okoro', createdAt: makeDateTime(35),
+    updatedAt: makeDateTime(28), retentionDate: '2040-12-31', parentFolderId: 'f8', checkout: { status: 'available', checkedOutBy: null, checkedOutAt: null },
+  },
+  {
+    id: 'doc-009', title: 'Agricultural Mechanization Programme Circular', description: 'Circular to all LGAs on the rollout of the agricultural mechanization support programme.',
+    type: 'circular', department: 'Ministry of Agriculture', status: 'approved', securityClassification: 'unclassified',
+    referenceNumber: 'MOA/CIR/2026/005', version: 1, fileSize: 560000, fileType: 'pdf', tags: ['agriculture', 'mechanization', 'LGA'],
+    metadata: { 'target_beneficiaries': '15,000 farmers' }, createdBy: 'Tunde Bakare', createdAt: makeDateTime(10),
+    updatedAt: makeDateTime(10), retentionDate: '2031-12-31', parentFolderId: 'f9', checkout: { status: 'available', checkedOutBy: null, checkedOutAt: null },
+  },
+  {
+    id: 'doc-010', title: 'Trade Zone Development MOU', description: 'Memorandum of Understanding for the establishment of a new Special Economic Zone.',
+    type: 'contract', department: 'Ministry of Commerce & Industry', status: 'pending_review', securityClassification: 'confidential',
+    referenceNumber: 'MCI/MOU/2026/003', version: 1, fileSize: 3400000, fileType: 'pdf', tags: ['trade zone', 'MOU', 'SEZ'],
+    metadata: { 'partner': 'Dangote Industries', 'zone_location': 'Ibeju-Lekki' }, createdBy: 'Yakubu Danjuma', createdAt: makeDateTime(5),
+    updatedAt: makeDateTime(5), retentionDate: '2041-12-31', parentFolderId: 'f10', checkout: { status: 'available', checkedOutBy: null, checkedOutAt: null },
+  },
+  {
+    id: 'doc-011', title: 'Staff Promotion Guidelines 2026', description: 'Updated guidelines for staff promotion across all public service cadres.',
+    type: 'policy', department: 'Head of Service', status: 'approved', securityClassification: 'internal',
+    referenceNumber: 'HOS/POL/2026/002', version: 2, fileSize: 1800000, fileType: 'pdf', tags: ['promotion', 'staff', 'guidelines'],
+    metadata: { 'effective_date': '2026-01-01' }, createdBy: 'Abdullahi Suleiman', createdAt: makeDateTime(60),
+    updatedAt: makeDateTime(40), retentionDate: '2031-12-31', parentFolderId: null, checkout: { status: 'available', checkedOutBy: null, checkedOutAt: null },
+  },
+  {
+    id: 'doc-012', title: 'Environmental Impact Assessment — New Industrial Estate', description: 'EIA report for the proposed industrial estate at Agbara corridor.',
+    type: 'report', department: 'Ministry of Environment', status: 'draft', securityClassification: 'internal',
+    referenceNumber: 'MOE/EIA/2026/007', version: 1, fileSize: 9500000, fileType: 'pdf', tags: ['EIA', 'environment', 'industrial estate'],
+    metadata: { 'location': 'Agbara, Ogun State' }, createdBy: 'Ifeoma Chukwu', createdAt: makeDateTime(2),
+    updatedAt: makeDateTime(2), retentionDate: '2036-12-31', parentFolderId: null, checkout: { status: 'available', checkedOutBy: null, checkedOutAt: null },
+  },
+  {
+    id: 'doc-013', title: 'Minute of Executive Council Meeting — March 2026', description: 'Official minutes of the State Executive Council meeting held in March 2026.',
+    type: 'minute', department: 'Office of the Governor', status: 'approved', securityClassification: 'restricted',
+    referenceNumber: 'GOV/MIN/2026/03', version: 1, fileSize: 2100000, fileType: 'pdf', tags: ['minute', 'EXCO', 'March 2026'],
+    metadata: { 'meeting_date': '2026-03-15', 'attendees': '24' }, createdBy: 'Adebayo Ogunlesi', createdAt: makeDateTime(12),
+    updatedAt: makeDateTime(12), retentionDate: '2046-12-31', parentFolderId: 'f1', checkout: { status: 'available', checkedOutBy: null, checkedOutAt: null },
+  },
+  {
+    id: 'doc-014', title: 'Procurement of Medical Equipment — Batch 3', description: 'Procurement document for medical equipment supply to 15 general hospitals.',
+    type: 'invoice', department: 'Ministry of Health', status: 'pending_review', securityClassification: 'internal',
+    referenceNumber: 'MOH/PROC/2026/019', version: 1, fileSize: 1500000, fileType: 'pdf', tags: ['procurement', 'medical equipment', 'hospitals'],
+    metadata: { 'supplier': 'MedTech Nigeria Ltd', 'value': '₦2.8B' }, createdBy: 'Fatima Ibrahim', createdAt: makeDateTime(4),
+    updatedAt: makeDateTime(4), retentionDate: '2036-12-31', parentFolderId: 'f4', checkout: { status: 'available', checkedOutBy: null, checkedOutAt: null },
+  },
+  {
+    id: 'doc-015', title: 'State Gazette Vol. 48 No. 12', description: 'Official state gazette containing new regulations and public notices.',
+    type: 'gazette', department: 'Ministry of Justice', status: 'approved', securityClassification: 'unclassified',
+    referenceNumber: 'MOJ/GAZ/2026/012', version: 1, fileSize: 4200000, fileType: 'pdf', tags: ['gazette', 'regulations', 'public notice'],
+    metadata: { 'volume': '48', 'number': '12' }, createdBy: 'Oluwaseun Adeyemi', createdAt: makeDateTime(8),
+    updatedAt: makeDateTime(8), retentionDate: '2076-12-31', parentFolderId: 'f6', checkout: { status: 'available', checkedOutBy: null, checkedOutAt: null },
   },
 ];
 
-// FIXED monthly spend per tenant (deterministic, ~75% of budget average)
-// These are the actual current monthly totals
-const tenantMonthlySpend: Record<string, number> = {
-  'tenant-1': 18750000,   // Dangote: 75% of 25M budget
-  'tenant-2': 38500000,   // MTN: 77% of 50M budget
-  'tenant-3': 13500000,   // Flutterwave: 75% of 18M budget
-  'tenant-4': 24320000,   // Safaricom: 76% of 32M budget
-  'tenant-5': 33600000,   // Standard Bank: 80% of 42M budget
-  'tenant-6': 11250000,   // Andela: 75% of 15M budget
-  'tenant-7': 22400000,   // Jumia: 80% of 28M budget
-  'tenant-8': 15400000,   // Interswitch: 77% of 20M budget
-};
+// ==================== DOCUMENT VERSIONS ====================
+export const mockVersions: DocumentVersion[] = [
+  { id: 'v1', documentId: 'doc-001', version: 1, changedBy: 'Ngozi Okafor', changeDescription: 'Initial draft uploaded', fileSize: 3200000, fileName: '2026_Budget_Proposal_v1.pdf', fileType: 'pdf', createdAt: makeDateTime(45) },
+  { id: 'v2', documentId: 'doc-001', version: 2, changedBy: 'Ngozi Okafor', changeDescription: 'Updated revenue projections based on NBS data', fileSize: 4100000, fileName: '2026_Budget_Proposal_v2.pdf', fileType: 'pdf', createdAt: makeDateTime(30) },
+  { id: 'v3', documentId: 'doc-001', version: 3, changedBy: 'Adebayo Ogunlesi', changeDescription: 'Final approval with Governor\'s annotations', fileSize: 4500000, fileName: '2026_Budget_Proposal_v3_FINAL.pdf', fileType: 'pdf', createdAt: makeDateTime(5) },
+  { id: 'v4', documentId: 'doc-002', version: 1, changedBy: 'Adebayo Ogunlesi', changeDescription: 'Initial draft', fileSize: 1000000, fileName: 'Executive_Order_Public_Service_Reform_v1.pdf', fileType: 'pdf', createdAt: makeDateTime(35) },
+  { id: 'v5', documentId: 'doc-002', version: 2, changedBy: 'Adebayo Ogunlesi', changeDescription: 'Incorporated legal review feedback', fileSize: 1200000, fileName: 'Executive_Order_Public_Service_Reform_v2.pdf', fileType: 'pdf', createdAt: makeDateTime(30) },
+  { id: 'v6', documentId: 'doc-007', version: 1, changedBy: 'Aisha Mohammed', changeDescription: 'Initial contract document', fileSize: 11000000, fileName: 'Lekki_Epe_Expressway_Contract_v1.pdf', fileType: 'pdf', createdAt: makeDateTime(15) },
+  { id: 'v7', documentId: 'doc-007', version: 2, changedBy: 'Aisha Mohammed', changeDescription: 'Updated payment schedule per BPP review', fileSize: 12400000, fileName: 'Lekki_Epe_Expressway_Contract_v2.pdf', fileType: 'pdf', createdAt: makeDateTime(8) },
+  { id: 'v8', documentId: 'doc-003', version: 1, changedBy: 'Emeka Nwankwo', changeDescription: 'Q1 progress report submitted', fileSize: 8200000, fileName: 'Lagos_Calabar_Highway_Q1_Report.pdf', fileType: 'pdf', createdAt: makeDateTime(7) },
+  { id: 'v9', documentId: 'doc-004', version: 1, changedBy: 'Fatima Ibrahim', changeDescription: 'Policy document first draft', fileSize: 2300000, fileName: 'PHC_Expansion_Policy_Draft.pdf', fileType: 'pdf', createdAt: makeDateTime(12) },
+  { id: 'v10', documentId: 'doc-010', version: 1, changedBy: 'Yakubu Danjuma', changeDescription: 'MOU initial version', fileSize: 3400000, fileName: 'Trade_Zone_MOU_Dangote.pdf', fileType: 'pdf', createdAt: makeDateTime(5) },
+];
 
-// Total spend across all tenants
-const TOTAL_ALL_SPEND = Object.values(tenantMonthlySpend).reduce((a, b) => a + b, 0); // = 1,777,200
-
-// Previous month spend (6% lower to show growth)
-const tenantPreviousSpend: Record<string, number> = {
-  'tenant-1': 17662500,   // 94% of current
-  'tenant-2': 36230000,   // 94% of current
-  'tenant-3': 12825000,   // 95% of current
-  'tenant-4': 23104000,   // 95% of current
-  'tenant-5': 31920000,   // 95% of current
-  'tenant-6': 10575000,   // 94% of current
-  'tenant-7': 21504000,   // 96% of current
-  'tenant-8': 14476000,   // 94% of current
-};
-
-// FIXED service breakdown per tenant (percentages of their total spend)
-// These percentages are based on typical cloud usage patterns per industry
-const tenantServiceAllocation: Record<string, Record<HuaweiService, number>> = {
-  // Dangote (Manufacturing) - Heavy on ECS, CCE for production systems
-  'tenant-1': {
-    ECS: 0.28, RDS: 0.18, OBS: 0.08, EVS: 0.10, ELB: 0.06,
-    VPC: 0.03, CDN: 0.02, NAT: 0.02, WAF: 0.03, DCS: 0.04,
-    DDS: 0.02, GaussDB: 0.05, FunctionGraph: 0.01, APIG: 0.02,
-    SMN: 0.01, CTS: 0.01, CCE: 0.04, SWR: 0, ModelArts: 0, DWS: 0, CSS: 0, MRS: 0, DLI: 0,
+// ==================== WORKFLOWS ====================
+export const mockWorkflows: Workflow[] = [
+  {
+    id: 'wf-001', documentId: 'doc-003', documentTitle: 'Lagos-Calabar Coastal Highway Progress Report',
+    type: 'review', status: 'in_progress', initiatedBy: 'Emeka Nwankwo', currentStep: 2, totalSteps: 3,
+    slaDeadline: makeDate(-2), createdAt: makeDateTime(7), completedAt: null,
+    steps: [
+      { id: 'ws-1', stepNumber: 1, assignee: 'Emeka Nwankwo', role: 'Author', department: 'Ministry of Works & Infrastructure', action: 'comment', instruction: 'Submit report with executive summary', status: 'approved', comment: 'Submitted for review', attachmentName: null, completedAt: makeDateTime(7) },
+      { id: 'ws-2', stepNumber: 2, assignee: 'Abdullahi Suleiman', role: 'Director Review', department: 'Head of Service', action: 'review', instruction: 'Review progress milestones and budget adherence', status: 'pending', comment: null, attachmentName: null, completedAt: null },
+      { id: 'ws-3', stepNumber: 3, assignee: 'Adebayo Ogunlesi', role: 'Final Approval', department: 'Office of the Governor', action: 'approve', instruction: 'Grant final approval for public release', status: 'pending', comment: null, attachmentName: null, completedAt: null },
+    ],
   },
-  // MTN (Telecom) - Heavy on network, CDN, storage
-  'tenant-2': {
-    ECS: 0.22, RDS: 0.15, OBS: 0.12, EVS: 0.06, ELB: 0.08,
-    VPC: 0.05, CDN: 0.10, NAT: 0.03, WAF: 0.04, DCS: 0.05,
-    DDS: 0.02, GaussDB: 0.03, FunctionGraph: 0.01, APIG: 0.02,
-    SMN: 0.01, CTS: 0.01, CCE: 0, SWR: 0, ModelArts: 0, DWS: 0, CSS: 0, MRS: 0, DLI: 0,
+  {
+    id: 'wf-002', documentId: 'doc-004', documentTitle: 'Primary Healthcare Expansion Policy',
+    type: 'approval', status: 'in_progress', initiatedBy: 'Fatima Ibrahim', currentStep: 1, totalSteps: 3,
+    slaDeadline: makeDate(3), createdAt: makeDateTime(12), completedAt: null,
+    steps: [
+      { id: 'ws-4', stepNumber: 1, assignee: 'Fatima Ibrahim', role: 'Author', department: 'Ministry of Health', action: 'comment', instruction: 'Submit policy document for budget review', status: 'approved', comment: 'Ready for departmental review', attachmentName: null, completedAt: makeDateTime(12) },
+      { id: 'ws-5', stepNumber: 2, assignee: 'Ngozi Okafor', role: 'Budget Clearance', department: 'Ministry of Finance', action: 'minute', instruction: 'Minute your observations on the ₦12.5B budget allocation', status: 'pending', comment: null, attachmentName: null, completedAt: null },
+      { id: 'ws-6', stepNumber: 3, assignee: 'Adebayo Ogunlesi', role: 'Governor Approval', department: 'Office of the Governor', action: 'sign', instruction: 'Sign off on the healthcare expansion policy', status: 'pending', comment: null, attachmentName: null, completedAt: null },
+    ],
   },
-  // Flutterwave (Fintech) - Heavy on security, database, serverless
-  'tenant-3': {
-    ECS: 0.20, RDS: 0.22, OBS: 0.05, EVS: 0.05, ELB: 0.06,
-    VPC: 0.04, CDN: 0.03, NAT: 0.02, WAF: 0.08, DCS: 0.07,
-    DDS: 0.03, GaussDB: 0.06, FunctionGraph: 0.04, APIG: 0.03,
-    SMN: 0.01, CTS: 0.01, CCE: 0, SWR: 0, ModelArts: 0, DWS: 0, CSS: 0, MRS: 0, DLI: 0,
+  {
+    id: 'wf-003', documentId: 'doc-007', documentTitle: 'Road Construction Contract — Lekki-Epe Expressway Phase 2',
+    type: 'sign_off', status: 'in_progress', initiatedBy: 'Aisha Mohammed', currentStep: 2, totalSteps: 4,
+    slaDeadline: makeDate(5), createdAt: makeDateTime(8), completedAt: null,
+    steps: [
+      { id: 'ws-7', stepNumber: 1, assignee: 'Aisha Mohammed', role: 'Procurement Officer', department: 'Bureau of Public Procurement', action: 'append_document', instruction: 'Attach due diligence report and bid evaluation', status: 'approved', comment: 'Due diligence completed', attachmentName: 'BPP_Due_Diligence_Report.pdf', completedAt: makeDateTime(8) },
+      { id: 'ws-8', stepNumber: 2, assignee: 'Oluwaseun Adeyemi', role: 'Legal Review', department: 'Ministry of Justice', action: 'annotate', instruction: 'Review and annotate contract terms, flag any legal risks', status: 'approved', comment: 'Legal terms verified, no material risks found', attachmentName: null, completedAt: makeDateTime(6) },
+      { id: 'ws-9', stepNumber: 3, assignee: 'Ngozi Okafor', role: 'Financial Clearance', department: 'Ministry of Finance', action: 'endorse', instruction: 'Endorse that ₦45.2B is within approved capital budget', status: 'pending', comment: null, attachmentName: null, completedAt: null },
+      { id: 'ws-10', stepNumber: 4, assignee: 'Adebayo Ogunlesi', role: 'Governor Sign-off', department: 'Office of the Governor', action: 'sign', instruction: 'Final signature to execute the contract', status: 'pending', comment: null, attachmentName: null, completedAt: null },
+    ],
   },
-  // Safaricom (Telecom) - Similar to MTN
-  'tenant-4': {
-    ECS: 0.24, RDS: 0.16, OBS: 0.10, EVS: 0.07, ELB: 0.07,
-    VPC: 0.04, CDN: 0.09, NAT: 0.03, WAF: 0.04, DCS: 0.05,
-    DDS: 0.02, GaussDB: 0.04, FunctionGraph: 0.01, APIG: 0.02,
-    SMN: 0.01, CTS: 0.01, CCE: 0, SWR: 0, ModelArts: 0, DWS: 0, CSS: 0, MRS: 0, DLI: 0,
+  {
+    id: 'wf-004', documentId: 'doc-010', documentTitle: 'Trade Zone Development MOU',
+    type: 'approval', status: 'pending', initiatedBy: 'Yakubu Danjuma', currentStep: 1, totalSteps: 3,
+    slaDeadline: makeDate(7), createdAt: makeDateTime(5), completedAt: null,
+    steps: [
+      { id: 'ws-11', stepNumber: 1, assignee: 'Yakubu Danjuma', role: 'Author', department: 'Ministry of Commerce & Industry', action: 'comment', instruction: 'Submit MOU for legal and executive review', status: 'approved', comment: 'Submitted for review', attachmentName: null, completedAt: makeDateTime(5) },
+      { id: 'ws-12', stepNumber: 2, assignee: 'Oluwaseun Adeyemi', role: 'Legal Review', department: 'Ministry of Justice', action: 'review', instruction: 'Review MOU terms, confirm compliance with PPP framework', status: 'pending', comment: null, attachmentName: null, completedAt: null },
+      { id: 'ws-13', stepNumber: 3, assignee: 'Adebayo Ogunlesi', role: 'Final Approval', department: 'Office of the Governor', action: 'approve', instruction: 'Approve the MOU for execution with Dangote Industries', status: 'pending', comment: null, attachmentName: null, completedAt: null },
+    ],
   },
-  // Standard Bank (Banking) - Heavy on security, databases, compliance
-  'tenant-5': {
-    ECS: 0.18, RDS: 0.20, OBS: 0.08, EVS: 0.08, ELB: 0.05,
-    VPC: 0.04, CDN: 0.02, NAT: 0.02, WAF: 0.10, DCS: 0.06,
-    DDS: 0.03, GaussDB: 0.08, FunctionGraph: 0.01, APIG: 0.02,
-    SMN: 0.01, CTS: 0.02, CCE: 0, SWR: 0, ModelArts: 0, DWS: 0, CSS: 0, MRS: 0, DLI: 0,
+  {
+    id: 'wf-005', documentId: 'doc-014', documentTitle: 'Procurement of Medical Equipment — Batch 3',
+    type: 'approval', status: 'in_progress', initiatedBy: 'Fatima Ibrahim', currentStep: 1, totalSteps: 2,
+    slaDeadline: makeDate(2), createdAt: makeDateTime(4), completedAt: null,
+    steps: [
+      { id: 'ws-14', stepNumber: 1, assignee: 'Aisha Mohammed', role: 'Procurement Verification', department: 'Bureau of Public Procurement', action: 'review', instruction: 'Verify procurement process compliance and vendor selection', status: 'pending', comment: null, attachmentName: null, completedAt: null },
+      { id: 'ws-15', stepNumber: 2, assignee: 'Ngozi Okafor', role: 'Payment Authorization', department: 'Ministry of Finance', action: 'sign', instruction: 'Authorize payment release of ₦2.8B to MedTech Nigeria Ltd', status: 'pending', comment: null, attachmentName: null, completedAt: null },
+    ],
   },
-  // Andela (Technology) - Dev-heavy, serverless, containers
-  'tenant-6': {
-    ECS: 0.22, RDS: 0.12, OBS: 0.06, EVS: 0.05, ELB: 0.05,
-    VPC: 0.03, CDN: 0.04, NAT: 0.02, WAF: 0.03, DCS: 0.05,
-    DDS: 0.02, GaussDB: 0.03, FunctionGraph: 0.08, APIG: 0.05,
-    SMN: 0.02, CTS: 0.01, CCE: 0.10, SWR: 0.02, ModelArts: 0, DWS: 0, CSS: 0, MRS: 0, DLI: 0,
+  {
+    id: 'wf-006', documentId: 'doc-001', documentTitle: '2026 Fiscal Year Budget Proposal',
+    type: 'approval', status: 'approved', initiatedBy: 'Ngozi Okafor', currentStep: 3, totalSteps: 3,
+    slaDeadline: makeDate(40), createdAt: makeDateTime(45), completedAt: makeDateTime(5),
+    steps: [
+      { id: 'ws-16', stepNumber: 1, assignee: 'Ngozi Okafor', role: 'Author', department: 'Ministry of Finance', action: 'comment', instruction: 'Submit the budget proposal with supporting schedules', status: 'approved', comment: 'Submitted budget proposal with all 15 ministry schedules', attachmentName: null, completedAt: makeDateTime(45) },
+      { id: 'ws-17', stepNumber: 2, assignee: 'Abdullahi Suleiman', role: 'HOS Review', department: 'Head of Service', action: 'minute', instruction: 'Minute your assessment of personnel cost projections', status: 'approved', comment: 'Personnel costs reviewed and endorsed. Recommend 8% increment cap.', attachmentName: null, completedAt: makeDateTime(20) },
+      { id: 'ws-18', stepNumber: 3, assignee: 'Adebayo Ogunlesi', role: 'Governor Approval', department: 'Office of the Governor', action: 'sign', instruction: 'Sign to approve the 2026 fiscal year budget for implementation', status: 'approved', comment: 'Approved for implementation effective April 1, 2026', attachmentName: null, completedAt: makeDateTime(5) },
+    ],
   },
-  // Jumia (E-commerce) - CDN, storage, search heavy
-  'tenant-7': {
-    ECS: 0.25, RDS: 0.14, OBS: 0.12, EVS: 0.06, ELB: 0.07,
-    VPC: 0.03, CDN: 0.12, NAT: 0.02, WAF: 0.04, DCS: 0.06,
-    DDS: 0.02, GaussDB: 0.02, FunctionGraph: 0.01, APIG: 0.02,
-    SMN: 0.01, CTS: 0.01, CCE: 0, SWR: 0, ModelArts: 0, DWS: 0, CSS: 0, MRS: 0, DLI: 0,
-  },
-  // Interswitch (Fintech) - Similar to Flutterwave
-  'tenant-8': {
-    ECS: 0.21, RDS: 0.20, OBS: 0.05, EVS: 0.06, ELB: 0.06,
-    VPC: 0.04, CDN: 0.03, NAT: 0.02, WAF: 0.09, DCS: 0.07,
-    DDS: 0.03, GaussDB: 0.05, FunctionGraph: 0.03, APIG: 0.04,
-    SMN: 0.01, CTS: 0.01, CCE: 0, SWR: 0, ModelArts: 0, DWS: 0, CSS: 0, MRS: 0, DLI: 0,
-  },
-};
-
-// FIXED region distribution per tenant (based on their geography)
-const tenantRegionAllocation: Record<string, Record<HuaweiRegion, number>> = {
-  'tenant-1': { 'lagos-mtn-1': 0.35, 'af-south-1': 0.35, 'eu-west-0': 0.15, 'ap-southeast-1': 0.10, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0 },
-  'tenant-2': { 'lagos-mtn-1': 0.40, 'af-south-1': 0.35, 'eu-west-0': 0.10, 'ap-southeast-1': 0.10, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0 },
-  'tenant-3': { 'lagos-mtn-1': 0.30, 'af-south-1': 0.30, 'eu-west-0': 0.20, 'ap-southeast-1': 0.10, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0.05, 'na-mexico-1': 0 },
-  'tenant-4': { 'lagos-mtn-1': 0.45, 'af-south-1': 0.35, 'eu-west-0': 0.10, 'ap-southeast-1': 0.05, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0 },
-  'tenant-5': { 'lagos-mtn-1': 0.45, 'af-south-1': 0.40, 'eu-west-0': 0.10, 'ap-southeast-1': 0.05, 'ap-southeast-2': 0, 'ap-southeast-3': 0, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0 },
-  'tenant-6': { 'lagos-mtn-1': 0.25, 'af-south-1': 0.25, 'eu-west-0': 0.25, 'ap-southeast-1': 0.15, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0.05 },
-  'tenant-7': { 'lagos-mtn-1': 0.35, 'af-south-1': 0.30, 'eu-west-0': 0.15, 'ap-southeast-1': 0.10, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0.05, 'na-mexico-1': 0 },
-  'tenant-8': { 'lagos-mtn-1': 0.35, 'af-south-1': 0.30, 'eu-west-0': 0.20, 'ap-southeast-1': 0.10, 'ap-southeast-2': 0, 'ap-southeast-3': 0.05, 'cn-north-4': 0, 'cn-east-3': 0, 'la-south-2': 0, 'me-east-1': 0, 'na-mexico-1': 0 },
-};
-
-// Resource counts per tenant (deterministic)
-const tenantResourceCounts: Record<string, number> = {
-  'tenant-1': 95,
-  'tenant-2': 180,
-  'tenant-3': 72,
-  'tenant-4': 125,
-  'tenant-5': 165,
-  'tenant-6': 58,
-  'tenant-7': 98,
-  'tenant-8': 84,
-};
-
-// Total resources across all tenants
-const TOTAL_RESOURCES = Object.values(tenantResourceCounts).reduce((a, b) => a + b, 0); // = 877
-
-// =====================================================
-// DATA GENERATION FUNCTIONS
-// All use the fixed data above for consistency
-// =====================================================
-
-// Seeded random number generator for deterministic "randomness"
-// This creates natural-looking variation that's consistent across renders
-function seededRandom(seed: number): number {
-  const x = Math.sin(seed * 9999) * 10000;
-  return x - Math.floor(x);
-}
-
-// Helper to get days from date range preset
-export function getDaysFromPreset(preset: string): number {
-  switch (preset) {
-    case 'last7days': return 7;
-    case 'last30days': return 30;
-    case 'last90days': return 90;
-    case 'thisMonth': {
-      const today = new Date();
-      return today.getDate(); // Days elapsed this month
-    }
-    case 'lastMonth': {
-      const today = new Date();
-      const lastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-      return lastMonth.getDate(); // Days in last month
-    }
-    default: return 30;
-  }
-}
-
-// Helper: get the region's share of spend for scaling when a specific region is selected
-export function getRegionScale(tenantId: string | 'all', region: HuaweiRegion | 'all'): number {
-  if (region === 'all') return 1;
-  if (tenantId === 'all') {
-    // Average across all tenants for this region
-    const allocations = Object.values(tenantRegionAllocation);
-    const total = allocations.reduce((sum, alloc) => sum + (alloc[region] || 0), 0);
-    return total / allocations.length;
-  }
-  return tenantRegionAllocation[tenantId]?.[region] || 0;
-}
-
-// Generate cost trend data (configurable days + 7 days forecast)
-export function generateCostTrend(tenantId: string | 'all', daysToShow: number = 30, region: HuaweiRegion | 'all' = 'all'): CostTrendPoint[] {
-  const data: CostTrendPoint[] = [];
-  const today = new Date();
-
-  // Get the monthly total and calculate daily average
-  const monthlyTotal = tenantId === 'all'
-    ? TOTAL_ALL_SPEND
-    : tenantMonthlySpend[tenantId] || 15000000;
-
-  const regionScale = getRegionScale(tenantId, region);
-  const dailyAverage = (monthlyTotal / 30) * regionScale;
-  const previousMonthlyTotal = tenantId === 'all'
-    ? Object.values(tenantPreviousSpend).reduce((a, b) => a + b, 0)
-    : tenantPreviousSpend[tenantId] || 14000000;
-  const previousDailyAverage = (previousMonthlyTotal / 30) * regionScale;
-
-  // Tenant-based seed for consistent but varied data per tenant
-  const tenantSeed = tenantId === 'all' ? 42 : parseInt(tenantId.replace('tenant-', ''), 10) * 17;
-
-  // Generate days with realistic patterns (use daysToShow instead of hardcoded 30)
-  // Use actual date as seed to ensure same calendar day = same value across different ranges
-  let previousAmount = previousDailyAverage;
-
-  for (let i = daysToShow - 1; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-
-    const dayOfWeek = date.getDay();
-    const dayOfMonth = date.getDate();
-    const monthOfYear = date.getMonth();
-
-    // Use date-based seed for consistency: same calendar day = same random factors
-    const dateSeed = tenantSeed + dayOfMonth * 31 + monthOfYear * 367 + date.getFullYear();
-
-    // Weekend factor: reduced spending on weekends (varying by day)
-    let weekendFactor = 1;
-    if (dayOfWeek === 0) weekendFactor = 0.72 + seededRandom(dateSeed * 3) * 0.1; // Sunday: 72-82%
-    else if (dayOfWeek === 6) weekendFactor = 0.78 + seededRandom(dateSeed * 5) * 0.1; // Saturday: 78-88%
-
-    // Day-of-week patterns (busier mid-week)
-    const weekdayFactors = [0.75, 0.95, 1.05, 1.12, 1.08, 0.98, 0.82]; // Sun-Sat
-    const weekdayFactor = weekdayFactors[dayOfWeek];
-
-    // Use daily average directly - no artificial trend progression
-    const trendBase = dailyAverage;
-
-    // Natural variation using seeded random based on actual date (±8-15%)
-    const randomVariation = (seededRandom(dateSeed * 7) - 0.5) * 0.18;
-
-    // Occasional spikes (batch jobs, deployments) - about 1 in 8 days
-    let spikeFactor = 1;
-    if (seededRandom(dateSeed * 11) > 0.875) {
-      spikeFactor = 1.15 + seededRandom(dateSeed * 13) * 0.2; // 15-35% spike
-    }
-
-    // Occasional dips (maintenance windows, outages) - about 1 in 12 days
-    if (seededRandom(dateSeed * 17) > 0.917) {
-      spikeFactor = 0.7 + seededRandom(dateSeed * 19) * 0.15; // 70-85% of normal
-    }
-
-    // Month-end processing bump (last 3 days)
-    const monthEndFactor = dayOfMonth >= 28 ? 1.08 + seededRandom(dateSeed) * 0.07 : 1;
-
-    // Start of month dip (first 2 days - less batch processing)
-    const monthStartFactor = dayOfMonth <= 2 ? 0.88 + seededRandom(dateSeed * 23) * 0.08 : 1;
-
-    // Combine all factors
-    let amount = trendBase * (1 + randomVariation) * weekdayFactor * spikeFactor * monthEndFactor * monthStartFactor;
-
-    // Apply weekend factor last
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      amount = amount * weekendFactor;
-    }
-
-    // Smooth out extreme values - don't let it deviate more than 25% from previous day
-    const maxChange = previousAmount * 0.25;
-    if (Math.abs(amount - previousAmount) > maxChange && i < daysToShow - 1) {
-      amount = previousAmount + Math.sign(amount - previousAmount) * maxChange * (0.6 + seededRandom(dateSeed * 29) * 0.4);
-    }
-
-    previousAmount = amount;
-
-    data.push({
-      date: date.toISOString().split('T')[0],
-      amount: Math.round(amount * 100) / 100,
-    });
-  }
-
-  // Add forecast for next 7 days with similar realistic patterns
-  const avgRecentAmount = data.slice(-7).reduce((sum, d) => sum + d.amount, 0) / 7;
-
-  for (let i = 1; i <= 7; i++) {
-    const date = new Date(today);
-    date.setDate(date.getDate() + i);
-
-    const dayOfWeek = date.getDay();
-    const dayOfMonth = date.getDate();
-    const monthOfYear = date.getMonth();
-
-    // Use date-based seed for forecast consistency
-    const dateSeed = tenantSeed + dayOfMonth * 31 + monthOfYear * 367 + date.getFullYear() + 1000;
-
-    // Weekend reduction
-    let weekendFactor = 1;
-    if (dayOfWeek === 0) weekendFactor = 0.75;
-    else if (dayOfWeek === 6) weekendFactor = 0.82;
-
-    // Slight upward trend in forecast
-    const trendFactor = 1 + (i * 0.003); // ~0.3% daily growth
-
-    // Natural variation using date-based seed
-    const randomVariation = (seededRandom(dateSeed * 31) - 0.5) * 0.12;
-
-    let forecast = avgRecentAmount * trendFactor * (1 + randomVariation);
-
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      forecast = forecast * weekendFactor;
-    }
-
-    data.push({
-      date: date.toISOString().split('T')[0],
-      amount: 0,
-      forecast: Math.round(forecast * 100) / 100,
-    });
-  }
-
-  return data;
-}
-
-// Service breakdown data - sums to total spend for the period
-// daysInPeriod scales the costs proportionally (default 30 = monthly)
-export function generateServiceBreakdown(tenantId: string | 'all', daysInPeriod: number = 30, region: HuaweiRegion | 'all' = 'all'): ServiceBreakdown[] {
-  const services: HuaweiService[] = [
-    'ECS', 'RDS', 'OBS', 'EVS', 'ELB', 'VPC', 'CDN', 'NAT', 'WAF', 'DCS',
-    'DDS', 'GaussDB', 'FunctionGraph', 'APIG', 'SMN', 'CTS', 'CCE', 'SWR',
-  ];
-
-  // Scale factor based on days (monthly data is base)
-  const scaleFactor = daysInPeriod / 30;
-  const regionScale = getRegionScale(tenantId, region);
-
-  let breakdown: ServiceBreakdown[];
-
-  if (tenantId === 'all') {
-    // Aggregate across all tenants
-    const serviceTotals: Record<HuaweiService, number> = {} as Record<HuaweiService, number>;
-    const serviceResources: Record<HuaweiService, number> = {} as Record<HuaweiService, number>;
-
-    services.forEach(s => {
-      serviceTotals[s] = 0;
-      serviceResources[s] = 0;
-    });
-
-    mockTenants.forEach(tenant => {
-      const tRegionScale = getRegionScale(tenant.id, region);
-      const spend = tenantMonthlySpend[tenant.id] * scaleFactor * tRegionScale;
-      const allocation = tenantServiceAllocation[tenant.id];
-      const resourceCount = tenantResourceCounts[tenant.id];
-
-      services.forEach(service => {
-        const pct = allocation[service] || 0;
-        serviceTotals[service] += spend * pct;
-        serviceResources[service] += Math.round(resourceCount * pct);
-      });
-    });
-
-    const totalCost = Object.values(serviceTotals).reduce((a, b) => a + b, 0);
-
-    breakdown = services.map(service => {
-      const cost = serviceTotals[service];
-      const previousCost = cost * 0.94; // 6% growth
-      const trend = ((cost - previousCost) / previousCost) * 100;
-
-      return {
-        service,
-        cost: Math.round(cost * 100) / 100,
-        percentage: Math.round((cost / totalCost) * 1000) / 10,
-        trend: Math.round(trend * 10) / 10,
-        resourceCount: serviceResources[service],
-      };
-    });
-  } else {
-    // Single tenant
-    const spend = (tenantMonthlySpend[tenantId] || 15000000) * scaleFactor * regionScale;
-    const allocation = tenantServiceAllocation[tenantId] || tenantServiceAllocation['tenant-1'];
-    const resourceCount = tenantResourceCounts[tenantId] || 80;
-
-    breakdown = services.map(service => {
-      const pct = allocation[service] || 0;
-      const cost = spend * pct;
-      const previousCost = cost * 0.94;
-      const trend = cost > 0 ? ((cost - previousCost) / previousCost) * 100 : 0;
-
-      return {
-        service,
-        cost: Math.round(cost * 100) / 100,
-        percentage: Math.round(pct * 1000) / 10,
-        trend: Math.round(trend * 10) / 10,
-        resourceCount: Math.round(resourceCount * pct),
-      };
-    });
-  }
-
-  // Filter out zero-cost services and sort by cost descending
-  return breakdown.filter(b => b.cost > 0).sort((a, b) => b.cost - a.cost);
-}
-
-// Region breakdown data - sums to total spend for the period
-// daysInPeriod scales the costs proportionally (default 30 = monthly)
-export function generateRegionBreakdown(tenantId: string | 'all', daysInPeriod: number = 30, region: HuaweiRegion | 'all' = 'all'): RegionBreakdown[] {
-  const allRegions: HuaweiRegion[] = [
-    'af-south-1', 'eu-west-0', 'ap-southeast-1', 'ap-southeast-2', 'ap-southeast-3',
-    'cn-north-4', 'cn-east-3', 'la-south-2', 'me-east-1', 'na-mexico-1',
-  ];
-
-  // When a specific region is selected, only show that region
-  const regions = region === 'all' ? allRegions : allRegions.filter(r => r === region);
-
-  // Scale factor based on days (monthly data is base)
-  const scaleFactor = daysInPeriod / 30;
-
-  let breakdown: RegionBreakdown[];
-
-  if (tenantId === 'all') {
-    const regionTotals: Record<HuaweiRegion, number> = {} as Record<HuaweiRegion, number>;
-    const regionResources: Record<HuaweiRegion, number> = {} as Record<HuaweiRegion, number>;
-
-    regions.forEach(r => {
-      regionTotals[r] = 0;
-      regionResources[r] = 0;
-    });
-
-    mockTenants.forEach(tenant => {
-      const spend = tenantMonthlySpend[tenant.id] * scaleFactor;
-      const allocation = tenantRegionAllocation[tenant.id];
-      const resourceCount = tenantResourceCounts[tenant.id];
-
-      regions.forEach(region => {
-        const pct = allocation[region] || 0;
-        regionTotals[region] += spend * pct;
-        regionResources[region] += Math.round(resourceCount * pct);
-      });
-    });
-
-    const totalCost = Object.values(regionTotals).reduce((a, b) => a + b, 0);
-
-    breakdown = regions.map(region => ({
-      region,
-      cost: Math.round(regionTotals[region] * 100) / 100,
-      percentage: Math.round((regionTotals[region] / totalCost) * 1000) / 10,
-      resourceCount: regionResources[region],
-    }));
-  } else {
-    const spend = (tenantMonthlySpend[tenantId] || 15000000) * scaleFactor;
-    const allocation = tenantRegionAllocation[tenantId] || tenantRegionAllocation['tenant-1'];
-    const resourceCount = tenantResourceCounts[tenantId] || 80;
-
-    breakdown = regions.map(region => {
-      const pct = allocation[region] || 0;
-      return {
-        region,
-        cost: Math.round(spend * pct * 100) / 100,
-        percentage: Math.round(pct * 1000) / 10,
-        resourceCount: Math.round(resourceCount * pct),
-      };
-    });
-  }
-
-  return breakdown.filter(b => b.cost > 0).sort((a, b) => b.cost - a.cost);
-}
-
-// Generate KPIs - all numbers are consistent and verifiable
-// Utilization stats are calculated from actual resource data
-// daysInPeriod scales the spend proportionally (default 30 = monthly)
-export function generateKPIs(tenantId: string | 'all', daysInPeriod: number = 30, region: HuaweiRegion | 'all' = 'all'): DashboardKPIs {
-  const isAll = tenantId === 'all';
-
-  // Scale factor based on days (monthly data is base)
-  const scaleFactor = daysInPeriod / 30;
-  const regionScale = getRegionScale(tenantId, region);
-
-  const monthlySpend = isAll
-    ? TOTAL_ALL_SPEND
-    : tenantMonthlySpend[tenantId] || 15000000;
-
-  // Scale spend based on date range and region
-  const totalSpend = monthlySpend * scaleFactor * regionScale;
-
-  const monthlyPreviousSpend = isAll
-    ? Object.values(tenantPreviousSpend).reduce((a, b) => a + b, 0)
-    : tenantPreviousSpend[tenantId] || 14000000;
-
-  const previousSpend = monthlyPreviousSpend * scaleFactor * regionScale;
-
-  const spendGrowthRate = ((totalSpend - previousSpend) / previousSpend) * 100;
-
-  const totalBudget = isAll
-    ? mockTenants.reduce((sum, t) => sum + t.budget, 0)
-    : mockTenants.find(t => t.id === tenantId)?.budget || 20000000;
-
-  // Budget usage is based on monthly budget, but scaled spend
-  const budgetUsed = (totalSpend / (totalBudget * scaleFactor)) * 100;
-
-  const activeResources = isAll
-    ? TOTAL_RESOURCES
-    : tenantResourceCounts[tenantId] || 80;
-
-  // Calculate actual utilization stats from resource patterns
-  // Using the same pattern logic as generateResources for consistency
-  const utilizationPatterns = [
-    { cpu: 15 }, { cpu: 12 }, { cpu: 25 }, { cpu: 28 }, { cpu: 38 },
-    { cpu: 45 }, { cpu: 55 }, { cpu: 62 }, { cpu: 68 }, { cpu: 75 },
-    { cpu: 82 }, { cpu: 88 }, { cpu: 92 }, { cpu: 95 }, { cpu: 8 },
-    { cpu: 42 }, { cpu: 72 }, { cpu: 35 }, { cpu: 58 }, { cpu: 85 },
-  ];
-
-  // Calculate average CPU and count underutilized (< 30% CPU)
-  let totalCpu = 0;
-  let underutilizedCount = 0;
-  const tenantsToProcess = isAll ? mockTenants : mockTenants.filter(t => t.id === tenantId);
-  let resourceIndex = 0;
-
-  tenantsToProcess.forEach((tenant, tIdx) => {
-    const resourceCount = tenantResourceCounts[tenant.id];
-    const tenantIndex = mockTenants.findIndex(t => t.id === tenant.id);
-
-    for (let i = 0; i < resourceCount; i++) {
-      const patternIndex = (i * 7 + tenantIndex * 3) % utilizationPatterns.length;
-      const cpu = utilizationPatterns[patternIndex].cpu;
-      totalCpu += cpu;
-      if (cpu < 30) underutilizedCount++;
-      resourceIndex++;
-    }
+];
+
+// ==================== AUDIT LOG ====================
+export const mockAuditLog: AuditLogEntry[] = [
+  { id: 'al-001', documentId: 'doc-012', documentTitle: 'Environmental Impact Assessment — New Industrial Estate', action: 'upload', userId: 'u11', userName: 'Ifeoma Chukwu', department: 'Ministry of Environment', ipAddress: '10.0.12.45', details: 'New document uploaded (9.5 MB)', timestamp: makeDateTime(2) },
+  { id: 'al-002', documentId: 'doc-005', documentTitle: 'UBEC Matching Grant Application 2026', action: 'upload', userId: 'u5', userName: 'Chidinma Eze', department: 'Ministry of Education', ipAddress: '10.0.8.22', details: 'Draft document uploaded', timestamp: makeDateTime(3) },
+  { id: 'al-003', documentId: 'doc-014', documentTitle: 'Procurement of Medical Equipment — Batch 3', action: 'workflow_start', userId: 'u4', userName: 'Fatima Ibrahim', department: 'Ministry of Health', ipAddress: '10.0.6.18', details: 'Approval workflow initiated', timestamp: makeDateTime(4) },
+  { id: 'al-004', documentId: 'doc-010', documentTitle: 'Trade Zone Development MOU', action: 'upload', userId: 'u10', userName: 'Yakubu Danjuma', department: 'Ministry of Commerce & Industry', ipAddress: '10.0.15.33', details: 'MOU document uploaded for review', timestamp: makeDateTime(5) },
+  { id: 'al-005', documentId: 'doc-001', documentTitle: '2026 Fiscal Year Budget Proposal', action: 'approve', userId: 'u1', userName: 'Adebayo Ogunlesi', department: 'Office of the Governor', ipAddress: '10.0.1.5', details: 'Final approval granted by Governor', timestamp: makeDateTime(5, 2) },
+  { id: 'al-006', documentId: 'doc-001', documentTitle: '2026 Fiscal Year Budget Proposal', action: 'workflow_complete', userId: 'u1', userName: 'Adebayo Ogunlesi', department: 'Office of the Governor', ipAddress: '10.0.1.5', details: 'Workflow completed — document approved', timestamp: makeDateTime(5, 1) },
+  { id: 'al-007', documentId: 'doc-007', documentTitle: 'Road Construction Contract — Lekki-Epe Expressway Phase 2', action: 'approve', userId: 'u6', userName: 'Oluwaseun Adeyemi', department: 'Ministry of Justice', ipAddress: '10.0.9.12', details: 'Legal review approved', timestamp: makeDateTime(6) },
+  { id: 'al-008', documentId: 'doc-003', documentTitle: 'Lagos-Calabar Coastal Highway Progress Report', action: 'upload', userId: 'u3', userName: 'Emeka Nwankwo', department: 'Ministry of Works & Infrastructure', ipAddress: '10.0.4.28', details: 'Progress report submitted', timestamp: makeDateTime(7) },
+  { id: 'al-009', documentId: 'doc-015', documentTitle: 'State Gazette Vol. 48 No. 12', action: 'approve', userId: 'u6', userName: 'Oluwaseun Adeyemi', department: 'Ministry of Justice', ipAddress: '10.0.9.12', details: 'Gazette approved for publication', timestamp: makeDateTime(8) },
+  { id: 'al-010', documentId: 'doc-007', documentTitle: 'Road Construction Contract — Lekki-Epe Expressway Phase 2', action: 'edit', userId: 'u7', userName: 'Aisha Mohammed', department: 'Bureau of Public Procurement', ipAddress: '10.0.11.7', details: 'Updated payment schedule', timestamp: makeDateTime(8, 3) },
+  { id: 'al-011', documentId: 'doc-009', documentTitle: 'Agricultural Mechanization Programme Circular', action: 'approve', userId: 'u8', userName: 'Tunde Bakare', department: 'Ministry of Agriculture', ipAddress: '10.0.13.19', details: 'Circular approved for distribution', timestamp: makeDateTime(10) },
+  { id: 'al-012', documentId: 'doc-013', documentTitle: 'Minute of Executive Council Meeting — March 2026', action: 'upload', userId: 'u1', userName: 'Adebayo Ogunlesi', department: 'Office of the Governor', ipAddress: '10.0.1.5', details: 'EXCO meeting minutes uploaded', timestamp: makeDateTime(12) },
+  { id: 'al-013', documentId: 'doc-004', documentTitle: 'Primary Healthcare Expansion Policy', action: 'upload', userId: 'u4', userName: 'Fatima Ibrahim', department: 'Ministry of Health', ipAddress: '10.0.6.18', details: 'Policy document submitted', timestamp: makeDateTime(12, 5) },
+  { id: 'al-014', documentId: 'doc-006', documentTitle: 'Legal Opinion on Land Use Charge', action: 'view', userId: 'u2', userName: 'Ngozi Okafor', department: 'Ministry of Finance', ipAddress: '10.0.3.41', details: 'Document viewed', timestamp: makeDateTime(14) },
+  { id: 'al-015', documentId: 'doc-006', documentTitle: 'Legal Opinion on Land Use Charge', action: 'download', userId: 'u2', userName: 'Ngozi Okafor', department: 'Ministry of Finance', ipAddress: '10.0.3.41', details: 'Document downloaded (watermarked copy)', timestamp: makeDateTime(14, 1) },
+  { id: 'al-016', documentId: 'doc-002', documentTitle: 'Executive Order on Public Service Reform', action: 'approve', userId: 'u1', userName: 'Adebayo Ogunlesi', department: 'Office of the Governor', ipAddress: '10.0.1.5', details: 'Executive order signed', timestamp: makeDateTime(10, 2) },
+  { id: 'al-017', documentId: 'doc-008', documentTitle: 'Q4 2025 Financial Audit Report', action: 'share', userId: 'u9', userName: 'Blessing Okoro', department: 'Auditor General Office', ipAddress: '10.0.14.8', details: 'Shared with Ministry of Finance', timestamp: makeDateTime(28) },
+  { id: 'al-018', documentId: 'doc-011', documentTitle: 'Staff Promotion Guidelines 2026', action: 'approve', userId: 'u12', userName: 'Abdullahi Suleiman', department: 'Head of Service', ipAddress: '10.0.2.15', details: 'Guidelines approved', timestamp: makeDateTime(40) },
+  { id: 'al-019', documentId: 'doc-001', documentTitle: '2026 Fiscal Year Budget Proposal', action: 'view', userId: 'u3', userName: 'Emeka Nwankwo', department: 'Ministry of Works & Infrastructure', ipAddress: '10.0.4.28', details: 'Document viewed', timestamp: makeDateTime(1) },
+  { id: 'al-020', documentId: 'doc-003', documentTitle: 'Lagos-Calabar Coastal Highway Progress Report', action: 'view', userId: 'u1', userName: 'Adebayo Ogunlesi', department: 'Office of the Governor', ipAddress: '10.0.1.5', details: 'Document viewed', timestamp: makeDateTime(1, 3) },
+];
+
+// ==================== NOTIFICATIONS ====================
+export const mockNotifications: Notification[] = [
+  { id: 'n1', title: 'Approval Required', message: 'Lagos-Calabar Highway Progress Report is awaiting your review', type: 'workflow', isRead: false, timestamp: makeDateTime(0, 2), linkTo: '/workflows' },
+  { id: 'n2', title: 'Document Uploaded', message: 'New Environmental Impact Assessment uploaded by Ifeoma Chukwu', type: 'document', isRead: false, timestamp: makeDateTime(2), linkTo: '/documents' },
+  { id: 'n3', title: 'Workflow Overdue', message: 'Highway Progress Report workflow has passed its SLA deadline', type: 'deadline', isRead: false, timestamp: makeDateTime(0, 5), linkTo: '/workflows' },
+  { id: 'n4', title: 'Document Approved', message: '2026 Budget Proposal has been approved by the Governor', type: 'workflow', isRead: true, timestamp: makeDateTime(5), linkTo: '/documents' },
+  { id: 'n5', title: 'New Contract for Review', message: 'Lekki-Epe Expressway contract needs financial clearance', type: 'workflow', isRead: false, timestamp: makeDateTime(1), linkTo: '/workflows' },
+  { id: 'n6', title: 'Retention Notice', message: '3 documents approaching retention expiry date', type: 'system', isRead: true, timestamp: makeDateTime(3), linkTo: '/documents' },
+];
+
+// ==================== REPORTS ====================
+export const mockReports: Report[] = [
+  { id: 'r1', name: 'Monthly Document Volume Report', type: 'document_volume', schedule: 'monthly', lastRun: makeDate(2), status: 'ready', format: 'pdf' },
+  { id: 'r2', name: 'Workflow Status Summary', type: 'workflow_status', schedule: 'weekly', lastRun: makeDate(1), status: 'ready', format: 'pdf' },
+  { id: 'r3', name: 'Department Activity Report', type: 'department_activity', schedule: 'monthly', lastRun: makeDate(5), status: 'ready', format: 'excel' },
+  { id: 'r4', name: 'Compliance & Retention Report', type: 'compliance', schedule: 'monthly', lastRun: makeDate(10), status: 'ready', format: 'pdf' },
+  { id: 'r5', name: 'User Activity Audit', type: 'user_activity', schedule: 'weekly', lastRun: makeDate(0), status: 'generating', format: 'csv' },
+  { id: 'r6', name: 'Document Retention Schedule', type: 'retention', schedule: 'monthly', lastRun: makeDate(15), status: 'ready', format: 'excel' },
+];
+
+// ==================== DASHBOARD KPIs ====================
+export function generateDashboardKPIs(): DashboardKPIs {
+  const totalDocuments = mockDocuments.length;
+  const pendingApprovals = mockDocuments.filter(d => d.status === 'pending_review').length;
+  const thisMonth = mockDocuments.filter(d => {
+    const created = new Date(d.createdAt);
+    const now = new Date();
+    return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+  }).length;
+
+  const deptCounts: Record<string, number> = {};
+  const typeCounts: Record<string, number> = {};
+  mockDocuments.forEach(d => {
+    deptCounts[d.department] = (deptCounts[d.department] || 0) + 1;
+    typeCounts[d.type] = (typeCounts[d.type] || 0) + 1;
   });
 
-  const avgCpu = resourceIndex > 0 ? totalCpu / resourceIndex : 50;
-  const avgMemory = avgCpu - 5; // Memory typically slightly lower than CPU
-
-  // Optimization opportunities based on underutilized resources
-  const optimizationOpportunities = underutilizedCount;
-
-  // Potential savings: estimate based on underutilized resources
-  // Underutilized resources could save ~40% of their cost through rightsizing
-  const potentialSavings = totalSpend * (underutilizedCount / activeResources) * 0.4;
-
-  // Efficiency score based on average utilization (higher util = more efficient use of resources)
-  const averageEfficiency = Math.min(95, Math.max(50, avgCpu + 10));
-
   return {
-    totalSpend: Math.round(totalSpend * 100) / 100,
-    previousSpend: Math.round(previousSpend * 100) / 100,
-    spendGrowthRate: Math.round(spendGrowthRate * 10) / 10,
-    budgetUsed: Math.round(budgetUsed * 10) / 10,
-    totalBudget,
-    activeResources,
-    optimizationOpportunities,
-    potentialSavings: Math.round(potentialSavings * 100) / 100,
-    averageEfficiency: Math.round(averageEfficiency * 10) / 10,
-    costPerResource: Math.round((totalSpend / activeResources) * 100) / 100,
-    // Additional stats for dashboard
-    avgCpuUtilization: Math.round(avgCpu),
-    avgMemoryUtilization: Math.round(avgMemory),
-    underutilizedResources: underutilizedCount,
-  };
-}
-
-// Generate recommendations - fixed data that makes sense
-export function generateRecommendations(tenantId: string | 'all', region: HuaweiRegion | 'all' = 'all'): Recommendation[] {
-  const recommendations: Recommendation[] = [
-    {
-      id: 'rec-1',
-      tenantId: 'tenant-1',
-      type: 'rightsizing',
-      title: 'Downsize ECS Instance ecs-prod-web-01',
-      description: 'This instance has averaged 12% CPU utilization over the past 30 days. Consider downsizing from s6.xlarge.4 to s6.large.2 to save costs.',
-      resourceId: 'ecs-prod-web-01',
-      resourceName: 'ecs-prod-web-01',
-      service: 'ECS',
-      currentCost: 45850.00,
-      projectedSavings: 18340.00,
-      impact: 'high',
-      effort: 'easy',
-      status: 'new',
-    },
-    {
-      id: 'rec-2',
-      tenantId: 'tenant-2',
-      type: 'idle_resource',
-      title: 'Terminate Idle RDS Instance rds-staging-db',
-      description: 'This RDS instance has had zero connections for 21 days. Consider terminating or snapshotting and removing.',
-      resourceId: 'rds-staging-db',
-      resourceName: 'rds-staging-db',
-      service: 'RDS',
-      currentCost: 32400.00,
-      projectedSavings: 32400.00,
-      impact: 'high',
-      effort: 'easy',
-      status: 'new',
-    },
-    {
-      id: 'rec-3',
-      tenantId: 'tenant-3',
-      type: 'reserved_instance',
-      title: 'Purchase Reserved Instance for ECS Cluster',
-      description: 'Your ECS cluster has stable usage patterns. Purchasing 1-year reserved instances could save 35% on compute costs.',
-      resourceId: 'ecs-cluster-prod',
-      resourceName: 'Production ECS Cluster',
-      service: 'ECS',
-      currentCost: 284000.00,
-      projectedSavings: 99400.00,
-      impact: 'high',
-      effort: 'moderate',
-      status: 'new',
-    },
-    {
-      id: 'rec-4',
-      tenantId: 'tenant-4',
-      type: 'storage_optimization',
-      title: 'Move Cold Data to OBS Standard-IA',
-      description: 'Analysis shows 2.4TB of data in OBS Standard that hasn\'t been accessed in 90+ days. Moving to Standard-IA could reduce costs by 40%.',
-      resourceId: 'obs-bucket-archive',
-      resourceName: 'obs-bucket-archive',
-      service: 'OBS',
-      currentCost: 15600.00,
-      projectedSavings: 6240.00,
-      impact: 'medium',
-      effort: 'easy',
-      status: 'in_progress',
-    },
-    {
-      id: 'rec-5',
-      tenantId: 'tenant-5',
-      type: 'network_optimization',
-      title: 'Optimize CDN Cache Rules',
-      description: 'Your CDN has a 45% cache hit ratio. Optimizing cache rules could improve this to 85% and reduce origin traffic costs.',
-      resourceId: 'cdn-domain-main',
-      resourceName: 'cdn-domain-main',
-      service: 'CDN',
-      currentCost: 89000.00,
-      projectedSavings: 35600.00,
-      impact: 'medium',
-      effort: 'moderate',
-      status: 'new',
-    },
-    {
-      id: 'rec-6',
-      tenantId: 'tenant-6',
-      type: 'database_tuning',
-      title: 'Enable RDS Read Replicas',
-      description: 'High read workload detected on primary RDS. Adding read replicas would improve performance and enable smaller primary instance.',
-      resourceId: 'rds-prod-primary',
-      resourceName: 'rds-prod-primary',
-      service: 'RDS',
-      currentCost: 124000.00,
-      projectedSavings: 37200.00,
-      impact: 'high',
-      effort: 'complex',
-      status: 'new',
-    },
-    {
-      id: 'rec-7',
-      tenantId: 'tenant-7',
-      type: 'idle_resource',
-      title: 'Delete Unattached EVS Volumes',
-      description: '8 EVS volumes totaling 1.6TB are not attached to any instance. Delete or snapshot these to eliminate waste.',
-      resourceId: 'evs-unattached-group',
-      resourceName: 'Unattached EVS Volumes',
-      service: 'EVS',
-      currentCost: 12800.00,
-      projectedSavings: 12800.00,
-      impact: 'medium',
-      effort: 'easy',
-      status: 'new',
-    },
-    {
-      id: 'rec-8',
-      tenantId: 'tenant-8',
-      type: 'rightsizing',
-      title: 'Scale Down DCS Instance',
-      description: 'Redis cache memory utilization averages 18%. Consider scaling from 16GB to 8GB instance.',
-      resourceId: 'dcs-redis-prod',
-      resourceName: 'dcs-redis-prod',
-      service: 'DCS',
-      currentCost: 38500.00,
-      projectedSavings: 19250.00,
-      impact: 'medium',
-      effort: 'easy',
-      status: 'new',
-    },
-    {
-      id: 'rec-9',
-      tenantId: 'tenant-1',
-      type: 'reserved_instance',
-      title: 'GaussDB Reserved Capacity',
-      description: 'Your GaussDB usage has been consistent. Reserved capacity purchase could yield 25% savings.',
-      resourceId: 'gaussdb-cluster',
-      resourceName: 'gaussdb-cluster',
-      service: 'GaussDB',
-      currentCost: 210000.00,
-      projectedSavings: 52500.00,
-      impact: 'high',
-      effort: 'moderate',
-      status: 'new',
-    },
-    {
-      id: 'rec-10',
-      tenantId: 'tenant-2',
-      type: 'network_optimization',
-      title: 'Consolidate NAT Gateways',
-      description: 'Multiple NAT gateways detected in same VPC. Consolidating to single gateway could reduce costs.',
-      resourceId: 'nat-gateway-group',
-      resourceName: 'VPC NAT Gateways',
-      service: 'NAT',
-      currentCost: 24500.00,
-      projectedSavings: 12250.00,
-      impact: 'low',
-      effort: 'moderate',
-      status: 'new',
-    },
-  ];
-
-  let filtered = tenantId !== 'all'
-    ? recommendations.filter(r => r.tenantId === tenantId)
-    : recommendations;
-
-  // When a specific region is selected, only include recommendations for tenants
-  // that have allocation in that region
-  if (region !== 'all') {
-    filtered = filtered.filter(r => {
-      const alloc = tenantRegionAllocation[r.tenantId];
-      return alloc && (alloc[region] || 0) > 0;
-    });
-  }
-
-  return filtered;
-}
-
-// =====================================================
-// VDC HIERARCHY GENERATION
-// Deterministic VDC tree for each tenant
-// =====================================================
-
-// Per-tenant VDC naming to make each tenant's hierarchy unique
-const tenantVDCNames: Record<string, { l1: string; l2: string[]; l3: Record<string, string[]>; l4: Record<string, string[]> }> = {
-  'tenant-1': {
-    l1: 'Dangote Enterprise VDC',
-    l2: ['Manufacturing IT', 'Supply Chain Ops', 'Corporate Finance'],
-    l3: { 'Manufacturing IT': ['Plant Systems', 'ERP Platform'], 'Supply Chain Ops': ['Logistics Hub'] },
-    l4: { 'Plant Systems': ['SCADA Team', 'IoT Sensors'] },
-  },
-  'tenant-2': {
-    l1: 'MTN Digital VDC',
-    l2: ['Network Engineering', 'Digital Services', 'Business Systems'],
-    l3: { 'Network Engineering': ['Core Network', '5G Platform'], 'Digital Services': ['MoMo Platform'] },
-    l4: { 'Core Network': ['NOC Team', 'RAN Ops'] },
-  },
-  'tenant-3': {
-    l1: 'Flutterwave Platform VDC',
-    l2: ['Payment Processing', 'Risk & Compliance', 'Developer Platform'],
-    l3: { 'Payment Processing': ['Gateway Core', 'Settlement Engine'], 'Risk & Compliance': ['Fraud Detection'] },
-    l4: { 'Gateway Core': ['API Team', 'Routing Engine'] },
-  },
-  'tenant-4': {
-    l1: 'Safaricom Cloud VDC',
-    l2: ['M-PESA Infrastructure', 'Enterprise Solutions', 'Consumer Digital'],
-    l3: { 'M-PESA Infrastructure': ['Transaction Engine', 'Agent Network'], 'Enterprise Solutions': ['B2B Platform'] },
-    l4: { 'Transaction Engine': ['Core Processing', 'Reconciliation'] },
-  },
-  'tenant-5': {
-    l1: 'Standard Bank VDC',
-    l2: ['Core Banking', 'Digital Channels', 'Risk Management'],
-    l3: { 'Core Banking': ['Lending Platform', 'Deposits System'], 'Digital Channels': ['Mobile Banking'] },
-    l4: { 'Lending Platform': ['Credit Scoring', 'Loan Origination'] },
-  },
-  'tenant-6': {
-    l1: 'Andela Engineering VDC',
-    l2: ['Learning Platform', 'Talent Ops', 'Engineering Tools'],
-    l3: { 'Learning Platform': ['Course Engine', 'Assessment Hub'], 'Talent Ops': ['Matching Service'] },
-    l4: { 'Course Engine': ['Content Delivery', 'Lab Environments'] },
-  },
-  'tenant-7': {
-    l1: 'Jumia Commerce VDC',
-    l2: ['Marketplace Platform', 'Logistics Tech', 'Seller Tools'],
-    l3: { 'Marketplace Platform': ['Product Catalog', 'Order Management'], 'Logistics Tech': ['Delivery Tracking'] },
-    l4: { 'Product Catalog': ['Search Engine', 'Recommendation AI'] },
-  },
-  'tenant-8': {
-    l1: 'Interswitch Gateway VDC',
-    l2: ['Switch Infrastructure', 'Card Processing', 'Value Added Services'],
-    l3: { 'Switch Infrastructure': ['Transaction Switch', 'Settlement Core'], 'Card Processing': ['Issuing Platform'] },
-    l4: { 'Transaction Switch': ['Real-time Engine', 'Batch Processing'] },
-  },
-};
-
-const defaultVDCNames = {
-  l1: 'Enterprise VDC',
-  l2: ['IT Division', 'Operations', 'Finance'],
-  l3: { 'IT Division': ['Infrastructure', 'Development'], 'Operations': ['Production'] } as Record<string, string[]>,
-  l4: { 'Infrastructure': ['Network Team', 'Storage Team'] } as Record<string, string[]>,
-};
-
-// Generate a deterministic VDC hierarchy for a tenant
-// Uses seeded random for consistency across renders
-export function generateVDCHierarchy(tenantId: string, tenantBudget: number): VDCNode {
-  const tenantIndex = mockTenants.findIndex(t => t.id === tenantId);
-  const seed = (tenantIndex + 1) * 137;
-  const names = tenantVDCNames[tenantId] || defaultVDCNames;
-
-  const l1Budget = tenantBudget;
-  const l1SpendRatio = 0.7 + seededRandom(seed) * 0.2;
-  const l1Spend = l1Budget * l1SpendRatio;
-  const resourceCount = tenantResourceCounts[tenantId] || 80;
-
-  // L2 divisions - deterministic split
-  const itDivisionPct = 0.45;
-  const operationsPct = 0.35;
-  const financePct = 0.20;
-
-  const itSpend = l1Spend * itDivisionPct;
-  const itResources = Math.floor(resourceCount * itDivisionPct);
-  const opsSpend = l1Spend * operationsPct;
-  const opsResources = Math.floor(resourceCount * operationsPct);
-  const finSpend = l1Spend * financePct;
-  const finResources = resourceCount - itResources - opsResources;
-
-  // L3 under IT Division
-  const infraPct = 0.55;
-  const devPct = 0.45;
-  const infraSpend = itSpend * infraPct;
-  const infraResources = Math.floor(itResources * infraPct);
-  const devSpend = itSpend * devPct;
-  const devResources = itResources - infraResources;
-
-  // L4 under Infrastructure
-  const networkPct = 0.55;
-  const storagePct = 0.45;
-  const networkSpend = infraSpend * networkPct;
-  const networkResources = Math.floor(infraResources * networkPct);
-  const storageSpend = infraSpend * storagePct;
-  const storageResources = infraResources - networkResources;
-
-  // L3 under Operations - Production is the only child
-  const prodSpend = opsSpend;
-  const prodResources = opsResources;
-
-  // Deterministic trends using seeded random
-  const trend = (s: number) => {
-    const v = seededRandom(s);
-    return v > 0.5 ? seededRandom(s + 1) * 15 : -seededRandom(s + 2) * 10;
-  };
-
-  const l2Names = names.l2;
-  const l3Map = names.l3;
-  const l4Map = names.l4;
-
-  // Build L3 children for first L2
-  const firstL2L3Names = l3Map[l2Names[0]] || ['Sub-dept A', 'Sub-dept B'];
-  const firstL3Name = firstL2L3Names[0];
-  const l4Names = l4Map[firstL3Name] || ['Team Alpha', 'Team Beta'];
-
-  // Build L3 children for second L2
-  const secondL2L3Names = l3Map[l2Names[1]] || ['Operations Core'];
-
-  return {
-    id: `${tenantId}-vdc1`,
-    name: names.l1,
-    tenantId,
-    level: 'vdc1',
-    spend: l1Spend,
-    budget: l1Budget,
-    resources: resourceCount,
-    trend: Math.round(trend(seed + 10) * 10) / 10,
-    children: [
-      {
-        id: `${tenantId}-vdc2-1`,
-        name: l2Names[0],
-        tenantId,
-        level: 'vdc2',
-        spend: itSpend,
-        budget: l1Budget * itDivisionPct,
-        resources: itResources,
-        trend: Math.round(trend(seed + 20) * 10) / 10,
-        children: [
-          {
-            id: `${tenantId}-vdc3-1`,
-            name: firstL2L3Names[0],
-            tenantId,
-            level: 'vdc3',
-            spend: infraSpend,
-            budget: l1Budget * itDivisionPct * infraPct,
-            resources: infraResources,
-            trend: Math.round(trend(seed + 30) * 10) / 10,
-            children: [
-              {
-                id: `${tenantId}-vdc4-1`,
-                name: l4Names[0],
-                tenantId,
-                level: 'vdc4',
-                spend: networkSpend,
-                budget: l1Budget * itDivisionPct * infraPct * networkPct,
-                resources: networkResources,
-                trend: Math.round(trend(seed + 40) * 10) / 10,
-              },
-              {
-                id: `${tenantId}-vdc4-2`,
-                name: l4Names[1] || 'Team B',
-                tenantId,
-                level: 'vdc4',
-                spend: storageSpend,
-                budget: l1Budget * itDivisionPct * infraPct * storagePct,
-                resources: storageResources,
-                trend: Math.round(trend(seed + 50) * 10) / 10,
-              },
-            ],
-          },
-          {
-            id: `${tenantId}-vdc3-2`,
-            name: firstL2L3Names[1] || 'Development',
-            tenantId,
-            level: 'vdc3',
-            spend: devSpend,
-            budget: l1Budget * itDivisionPct * devPct,
-            resources: devResources,
-            trend: Math.round(trend(seed + 60) * 10) / 10,
-          },
-        ],
-      },
-      {
-        id: `${tenantId}-vdc2-2`,
-        name: l2Names[1],
-        tenantId,
-        level: 'vdc2',
-        spend: opsSpend,
-        budget: l1Budget * operationsPct,
-        resources: opsResources,
-        trend: Math.round(trend(seed + 70) * 10) / 10,
-        children: [
-          {
-            id: `${tenantId}-vdc3-3`,
-            name: secondL2L3Names[0] || 'Production',
-            tenantId,
-            level: 'vdc3',
-            spend: prodSpend,
-            budget: l1Budget * operationsPct,
-            resources: prodResources,
-            trend: Math.round(trend(seed + 80) * 10) / 10,
-          },
-        ],
-      },
-      {
-        id: `${tenantId}-vdc2-3`,
-        name: l2Names[2],
-        tenantId,
-        level: 'vdc2',
-        spend: finSpend,
-        budget: l1Budget * financePct,
-        resources: finResources,
-        trend: Math.round(trend(seed + 90) * 10) / 10,
-      },
+    totalDocuments,
+    pendingApprovals,
+    documentsThisMonth: thisMonth,
+    documentsLastMonth: 11,
+    activeWorkflows: mockWorkflows.filter(w => w.status === 'in_progress' || w.status === 'pending').length,
+    overdueWorkflows: mockWorkflows.filter(w => new Date(w.slaDeadline) < new Date() && w.status !== 'approved').length,
+    departmentBreakdown: Object.entries(deptCounts).map(([department, count]) => ({ department, count })).sort((a, b) => b.count - a.count),
+    typeBreakdown: Object.entries(typeCounts).map(([type, count]) => ({ type, count })).sort((a, b) => b.count - a.count),
+    recentActivity: mockAuditLog.slice(0, 8),
+    monthlyTrend: [
+      { month: 'Oct', uploads: 18, approvals: 14 },
+      { month: 'Nov', uploads: 22, approvals: 19 },
+      { month: 'Dec', uploads: 15, approvals: 12 },
+      { month: 'Jan', uploads: 25, approvals: 20 },
+      { month: 'Feb', uploads: 20, approvals: 17 },
+      { month: 'Mar', uploads: thisMonth, approvals: pendingApprovals },
     ],
   };
-}
-
-// Flatten VDC tree into a list
-export function flattenVDCTree(node: VDCNode, result: VDCNode[] = []): VDCNode[] {
-  result.push(node);
-  if (node.children) {
-    node.children.forEach(child => flattenVDCTree(child, result));
-  }
-  return result;
-}
-
-// Get all leaf VDC IDs for a given VDC (including itself if it's a leaf)
-export function getLeafVDCIds(node: VDCNode): string[] {
-  if (!node.children || node.children.length === 0) {
-    return [node.id];
-  }
-  return node.children.flatMap(child => getLeafVDCIds(child));
-}
-
-// Get all VDC IDs under a node (including itself)
-export function getAllVDCIds(node: VDCNode): string[] {
-  const ids = [node.id];
-  if (node.children) {
-    node.children.forEach(child => {
-      ids.push(...getAllVDCIds(child));
-    });
-  }
-  return ids;
-}
-
-// Generate all VDC hierarchies for given tenants
-export function generateAllVDCHierarchies(tenantId: string | 'all'): VDCNode[] {
-  const tenantsToProcess = tenantId === 'all'
-    ? mockTenants
-    : mockTenants.filter(t => t.id === tenantId);
-
-  return tenantsToProcess.map(t => generateVDCHierarchy(t.id, t.budget));
-}
-
-// =====================================================
-// RESOURCE GENERATION
-// =====================================================
-
-// Available tags for resources
-const allTags = ['production', 'staging', 'critical', 'auto-scaled', 'backup', 'monitoring', 'compliance', 'dev', 'test'];
-
-// Generate resources with VARIED utilization data
-// Creates a realistic distribution: some underutilized, some optimal, some high
-export function generateResources(tenantId: string | 'all', selectedRegion: HuaweiRegion | 'all' = 'all'): Resource[] {
-  const resources: Resource[] = [];
-
-  const tenantsToProcess = tenantId === 'all'
-    ? mockTenants
-    : mockTenants.filter(t => t.id === tenantId);
-
-  // Predefined utilization patterns for variety
-  const utilizationPatterns = [
-    { cpu: 15, mem: 22, net: 8, disk: 45, label: 'underutilized' },
-    { cpu: 12, mem: 18, net: 5, disk: 35, label: 'underutilized' },
-    { cpu: 25, mem: 30, net: 15, disk: 50, label: 'low' },
-    { cpu: 28, mem: 35, net: 20, disk: 55, label: 'low' },
-    { cpu: 38, mem: 45, net: 30, disk: 60, label: 'moderate' },
-    { cpu: 45, mem: 52, net: 35, disk: 65, label: 'moderate' },
-    { cpu: 55, mem: 58, net: 42, disk: 70, label: 'healthy' },
-    { cpu: 62, mem: 65, net: 48, disk: 72, label: 'healthy' },
-    { cpu: 68, mem: 72, net: 55, disk: 75, label: 'optimal' },
-    { cpu: 75, mem: 78, net: 60, disk: 78, label: 'optimal' },
-    { cpu: 82, mem: 85, net: 65, disk: 82, label: 'high' },
-    { cpu: 88, mem: 90, net: 72, disk: 85, label: 'high' },
-    { cpu: 92, mem: 88, net: 78, disk: 88, label: 'critical' },
-    { cpu: 95, mem: 92, net: 82, disk: 90, label: 'critical' },
-    { cpu: 8, mem: 12, net: 3, disk: 25, label: 'idle' },
-    { cpu: 42, mem: 48, net: 28, disk: 58, label: 'moderate' },
-    { cpu: 72, mem: 68, net: 52, disk: 76, label: 'healthy' },
-    { cpu: 35, mem: 40, net: 25, disk: 55, label: 'low-moderate' },
-    { cpu: 58, mem: 62, net: 45, disk: 68, label: 'healthy' },
-    { cpu: 85, mem: 82, net: 68, disk: 80, label: 'high' },
-  ];
-
-  tenantsToProcess.forEach(tenant => {
-    const resourceCount = tenantResourceCounts[tenant.id];
-    const serviceAllocation = tenantServiceAllocation[tenant.id];
-    const regionAllocation = tenantRegionAllocation[tenant.id];
-    const monthlySpend = tenantMonthlySpend[tenant.id];
-
-    // Services with resources (non-zero allocation)
-    const activeServices = (Object.keys(serviceAllocation) as HuaweiService[])
-      .filter(s => serviceAllocation[s] > 0);
-    const activeRegions = (Object.keys(regionAllocation) as HuaweiRegion[])
-      .filter(r => regionAllocation[r] > 0);
-
-    // Tenant index affects pattern distribution
-    const tenantIndex = mockTenants.findIndex(t => t.id === tenant.id);
-
-    // Get leaf VDC IDs for this tenant's hierarchy
-    const hierarchy = generateVDCHierarchy(tenant.id, tenant.budget);
-    const leafVDCs = flattenVDCTree(hierarchy).filter(v => !v.children || v.children.length === 0);
-    const leafVDCIds = leafVDCs.map(v => v.id);
-
-    for (let i = 0; i < resourceCount; i++) {
-      // Deterministic service/region selection based on index
-      const serviceIndex = i % activeServices.length;
-      const regionIndex = Math.floor(i / activeServices.length) % activeRegions.length;
-
-      const service = activeServices[serviceIndex];
-      const region = activeRegions[regionIndex];
-
-      // Select utilization pattern based on resource index and tenant
-      const patternIndex = (i * 7 + tenantIndex * 3) % utilizationPatterns.length;
-      const basePattern = utilizationPatterns[patternIndex];
-
-      // Add small deterministic variation based on service type
-      const serviceVariation = (activeServices.indexOf(service) * 5) % 15 - 7;
-
-      const cpuUtil = Math.min(98, Math.max(5, basePattern.cpu + serviceVariation));
-      const memUtil = Math.min(98, Math.max(8, basePattern.mem + serviceVariation - 2));
-      const netUtil = Math.min(95, Math.max(3, basePattern.net + serviceVariation));
-      const diskUtil = Math.min(95, Math.max(15, basePattern.disk + (serviceVariation / 2)));
-
-      // Cost per resource based on service allocation
-      const servicePct = serviceAllocation[service];
-      const avgCostPerResource = (monthlySpend * servicePct) / Math.max(1, Math.round(resourceCount * servicePct));
-
-      // Environment type based on index
-      const envTypes = ['prod', 'staging', 'dev', 'test', 'qa'];
-      const envIndex = (i + tenantIndex) % 5;
-
-      // Assign VDC deterministically - distribute resources across leaf VDCs
-      const vdcIndex = i % leafVDCIds.length;
-      const vdcId = leafVDCIds[vdcIndex];
-
-      // Generate 1-3 tags deterministically
-      const tagSeed = (i * 13 + tenantIndex * 7);
-      const tagCount = 1 + (tagSeed % 3); // 1-3 tags
-      const tags: string[] = [];
-      for (let t = 0; t < tagCount; t++) {
-        const tagIdx = (tagSeed + t * 5) % allTags.length;
-        if (!tags.includes(allTags[tagIdx])) {
-          tags.push(allTags[tagIdx]);
-        }
-      }
-
-      // Status: ~3% error, rest split between running and stopped based on utilization
-      let status: 'running' | 'stopped' | 'error';
-      const statusSeed = seededRandom((i + 1) * 31 + tenantIndex * 97);
-      if (statusSeed < 0.03) {
-        status = 'error';
-      } else if (cpuUtil < 10 && i % 8 === 7) {
-        status = 'stopped';
-      } else {
-        status = 'running';
-      }
-
-      resources.push({
-        id: `${tenant.id}-resource-${i + 1}`,
-        tenantId: tenant.id,
-        vdcId,
-        name: `${service.toLowerCase()}-${envTypes[envIndex]}-${String(i + 1).padStart(2, '0')}`,
-        service,
-        region,
-        type: service === 'ECS' ? 's6.xlarge.4' : service === 'RDS' ? 'mysql.x1.large.4' : 'standard',
-        status,
-        tags,
-        cpuUtilization: Math.round(cpuUtil),
-        memoryUtilization: Math.round(memUtil),
-        networkUtilization: Math.round(netUtil),
-        diskUtilization: Math.round(diskUtil),
-        monthlyCost: Math.round(avgCostPerResource * 100) / 100,
-        createdAt: new Date(Date.now() - (i * 2 + 30) * 24 * 60 * 60 * 1000).toISOString(),
-      });
-    }
-  });
-
-  // Filter by region if a specific region is selected
-  if (selectedRegion !== 'all') {
-    return resources.filter(r => r.region === selectedRegion);
-  }
-
-  return resources;
-}
-
-// Tenant summaries for comparison view - uses consistent KPI data
-export function generateTenantSummaries(region: HuaweiRegion | 'all' = 'all'): TenantSummary[] {
-  return mockTenants.map(tenant => {
-    const kpis = generateKPIs(tenant.id, 30, region);
-    const services = generateServiceBreakdown(tenant.id, 30, region);
-    const recommendations = generateRecommendations(tenant.id, region);
-
-    return {
-      tenant,
-      totalSpend: kpis.totalSpend,
-      budgetUsage: kpis.budgetUsed,
-      efficiencyScore: tenant.efficiencyScore,
-      topService: services[0]?.service || 'ECS',
-      recommendationCount: recommendations.length,
-    };
-  });
 }

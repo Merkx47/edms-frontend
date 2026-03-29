@@ -1,424 +1,169 @@
-import { MdApartment, MdCalendarToday, MdCheckCircle, MdDarkMode, MdInfoOutline, MdLightMode, MdLogout, MdNotifications, MdPerson, MdPublic, MdSettings, MdWarning } from 'react-icons/md';
-import { useFinOpsStore, formatCompactCurrency } from '@/lib/finops-store';
-import { mockTenants, generateKPIs, getDaysFromPreset, getRegionScale } from '@/lib/mock-data';
-import { LanguageSelector } from '@/lib/i18n';
+import { MdDarkMode, MdLightMode, MdLogout, MdMenu, MdNotifications, MdPerson, MdSettings, MdSearch, MdCheckCircle, MdInfoOutline, MdWarning } from 'react-icons/md';
 import { Button } from '@/components/ui/button';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+  Popover, PopoverContent, PopoverTrigger,
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import type { Currency, DateRangePreset, HuaweiRegion } from '@shared/schema';
-import { regionNames } from '@shared/schema';
-import huaweiLogo from '@assets/image_1764758201045.png';
-import { useMemo, useState, useEffect } from 'react';
+import { Input } from '@/components/ui/input';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useDataStore } from '@/lib/data-store';
-
-// Mock notifications data
-const notifications = [
-  {
-    id: '1',
-    type: 'warning',
-    title: 'Budget Alert',
-    message: 'TechCorp Global is at 85% of monthly budget',
-    time: '5 min ago',
-    read: false,
-  },
-  {
-    id: '2',
-    type: 'info',
-    title: 'New Recommendation',
-    message: '3 new cost optimization opportunities found',
-    time: '1 hour ago',
-    read: false,
-  },
-  {
-    id: '3',
-    type: 'success',
-    title: 'Savings Applied',
-    message: 'Reserved instance purchase saved $2,400/month',
-    time: '3 hours ago',
-    read: true,
-  },
-];
-
-const currencyOptions: { value: Currency; label: string; flag: string }[] = [
-  { value: 'CNY', label: 'CNY', flag: '🇨🇳' },
-  { value: 'EUR', label: 'EUR', flag: '🇪🇺' },
-  { value: 'GBP', label: 'GBP', flag: '🇬🇧' },
-  { value: 'JPY', label: 'JPY', flag: '🇯🇵' },
-  { value: 'NGN', label: 'NGN', flag: '🇳🇬' },
-  { value: 'USD', label: 'USD', flag: '🇺🇸' },
-];
-
-const regionOptions: { value: HuaweiRegion | 'all'; label: string }[] = [
-  { value: 'all', label: 'All Regions' },
-  ...(Object.entries(regionNames) as [HuaweiRegion, string][])
-    .sort(([, a], [, b]) => a.localeCompare(b))
-    .map(([value, label]) => ({ value, label })),
-];
-
-const dateRangeOptions: { value: DateRangePreset; label: string }[] = [
-  { value: 'last7days', label: 'Last 7 Days' },
-  { value: 'last30days', label: 'Last 30 Days' },
-  { value: 'last90days', label: 'Last 90 Days' },
-  { value: 'thisMonth', label: 'This Month' },
-  { value: 'lastMonth', label: 'Last Month' },
-];
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function Header() {
   const [, setLocation] = useLocation();
-  const logout = useDataStore((s) => s.logout);
-  const {
-    currency,
-    setCurrency,
-    selectedTenantId,
-    setSelectedTenantId,
-    selectedRegion,
-    setSelectedRegion,
-    dateRange,
-    setDateRange,
-  } = useFinOpsStore();
+  const { logout, notifications, markNotificationRead, markAllNotificationsRead, currentUser } = useDataStore();
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
 
   useEffect(() => {
     const html = document.documentElement;
-    if (isDark) {
-      html.classList.add('dark');
-    } else {
-      html.classList.remove('dark');
-    }
+    if (isDark) { html.classList.add('dark'); } else { html.classList.remove('dark'); }
   }, [isDark]);
 
-  const selectedTenant = useMemo(() => {
-    if (selectedTenantId === 'all') return null;
-    return mockTenants.find(t => t.id === selectedTenantId);
-  }, [selectedTenantId]);
-
-  const daysInPeriod = useMemo(() => getDaysFromPreset(dateRange.preset), [dateRange.preset]);
-
-  const kpis = useMemo(() => generateKPIs(selectedTenantId, daysInPeriod, selectedRegion), [selectedTenantId, daysInPeriod, selectedRegion]);
-
-  const handleDateRangeChange = (preset: DateRangePreset) => {
-    const today = new Date();
-    let startDate = new Date();
-    
-    switch (preset) {
-      case 'last7days':
-        startDate.setDate(today.getDate() - 7);
-        break;
-      case 'last30days':
-        startDate.setDate(today.getDate() - 30);
-        break;
-      case 'last90days':
-        startDate.setDate(today.getDate() - 90);
-        break;
-      case 'thisMonth':
-        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-        break;
-      case 'lastMonth':
-        startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-        setDateRange({
-          preset,
-          startDate: startDate.toISOString().split('T')[0],
-          endDate: endOfLastMonth.toISOString().split('T')[0],
-        });
-        return;
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setLocation(`/documents?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
     }
-    
-    setDateRange({
-      preset,
-      startDate: startDate.toISOString().split('T')[0],
-      endDate: today.toISOString().split('T')[0],
-    });
   };
 
+  const { setSidebarCollapsed, sidebarCollapsed } = useDataStore();
+
   return (
-    <header className="h-16 border-b border-border bg-sidebar sticky top-0 z-50">
-      <div className="h-full px-6 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3">
-            <img 
-              src={huaweiLogo} 
-              alt="Huawei Cloud" 
-              className="h-8 w-auto object-contain dark:brightness-0 dark:invert"
-              data-testid="img-huawei-logo"
-            />
-            <div className="hidden sm:block">
-              <span className="text-lg font-semibold text-foreground">FinOps</span>
-              <span className="text-xs text-muted-foreground ml-2">Dashboard</span>
-            </div>
-          </div>
-          
-          
-          <Select 
-            value={selectedTenantId} 
-            onValueChange={setSelectedTenantId}
-          >
-            <SelectTrigger
-              className="w-[280px] bg-background/50"
-              data-testid="select-tenant"
-              data-tour="tenant-selector"
-            >
-              <div className="flex items-center gap-2 whitespace-nowrap overflow-hidden">
-                <MdApartment className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <SelectValue placeholder="Select Tenant" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all" data-testid="select-tenant-all">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">All Tenants</span>
-                  <Badge variant="secondary" className="text-xs">
-                    {selectedRegion === 'all' ? mockTenants.length : mockTenants.filter(t => getRegionScale(t.id, selectedRegion) > 0).length}
-                  </Badge>
-                </div>
-              </SelectItem>
-              {(selectedRegion === 'all' ? mockTenants : mockTenants.filter(t => getRegionScale(t.id, selectedRegion) > 0)).map((tenant) => (
-                <SelectItem
-                  key={tenant.id}
-                  value={tenant.id}
-                  data-testid={`select-tenant-${tenant.id}`}
-                >
-                  <div className="flex items-center justify-between gap-3 w-full whitespace-nowrap">
-                    <span className="truncate">{tenant.name}</span>
-                    <span className="text-xs text-muted-foreground flex-shrink-0">{tenant.country}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={selectedRegion}
-            onValueChange={(value) => setSelectedRegion(value as HuaweiRegion | 'all')}
-          >
-            <SelectTrigger className="w-[160px] bg-background/50 border-border">
-              <MdPublic className="h-4 w-4 text-muted-foreground mr-1" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {regionOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/50">
-            <span className="text-xs text-muted-foreground">{daysInPeriod}D Spend:</span>
-            <span className="text-sm font-mono font-semibold text-foreground">
-              {formatCompactCurrency(kpis.totalSpend, currency)}
-            </span>
-            <Badge 
-              variant={kpis.spendGrowthRate > 0 ? "destructive" : "secondary"}
-              className="text-xs"
-            >
-              {kpis.spendGrowthRate > 0 ? '+' : ''}{kpis.spendGrowthRate}%
-            </Badge>
-          </div>
-
-          <Select
-            value={dateRange.preset}
-            onValueChange={(value) => handleDateRangeChange(value as DateRangePreset)}
-          >
-            <SelectTrigger
-              className="w-[160px] bg-background/50"
-              data-testid="select-date-range"
-              data-tour="date-range"
-            >
-              <div className="flex items-center gap-2 whitespace-nowrap">
-                <MdCalendarToday className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <SelectValue />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {dateRangeOptions.map((option) => (
-                <SelectItem 
-                  key={option.value} 
-                  value={option.value}
-                  data-testid={`select-date-${option.value}`}
-                >
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select 
-            value={currency} 
-            onValueChange={(value) => setCurrency(value as Currency)}
-          >
-            <SelectTrigger 
-              className="w-[100px] bg-background/50"
-              data-testid="select-currency"
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {currencyOptions.map((option) => (
-                <SelectItem 
-                  key={option.value} 
-                  value={option.value}
-                  data-testid={`select-currency-${option.value}`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span>{option.flag}</span>
-                    <span>{option.label}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <LanguageSelector />
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsDark(!isDark)}
-            data-testid="button-theme-toggle"
-            data-tour="theme-toggle"
-          >
-            {isDark ? (
-              <MdLightMode className="h-4 w-4" />
-            ) : (
-              <MdDarkMode className="h-4 w-4" />
-            )}
+    <header className="h-14 lg:h-16 border-b border-border bg-sidebar/80 glass sticky top-0 z-50">
+      <div className="h-full px-3 lg:px-6 flex items-center justify-between gap-2 lg:gap-4">
+        <div className="flex items-center gap-2 lg:gap-5">
+          {/* Mobile hamburger */}
+          <Button variant="ghost" size="icon" className="lg:hidden h-9 w-9 rounded-full" onClick={() => setSidebarCollapsed(!sidebarCollapsed)}>
+            <MdMenu className="h-5 w-5" />
           </Button>
 
+          {/* Logo */}
+          <div className="flex items-center gap-2 lg:gap-3 cursor-pointer" onClick={() => setLocation('/')}>
+            <img src="/nigeria-coat-of-arms.svg" alt="Federal Republic of Nigeria" className="h-8 lg:h-10 w-auto drop-shadow-sm" />
+            <div className="hidden sm:flex flex-col">
+              <span className="text-sm font-bold tracking-tight text-foreground leading-tight">Federal EDMS</span>
+              <span className="text-[10px] text-muted-foreground leading-tight tracking-wide uppercase hidden lg:block">Document Management System</span>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="hidden lg:block h-8 w-px bg-border" />
+
+          {/* Search */}
+          <form onSubmit={handleSearch} className="hidden md:flex items-center">
+            <div className="relative">
+              <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search documents, reference numbers..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                className={`pl-9 w-[320px] bg-background/60 border-border/50 transition-all duration-300 ${searchFocused ? 'w-[400px] bg-background shadow-md' : ''}`}
+              />
+            </div>
+          </form>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          {/* Theme toggle */}
+          <Button variant="ghost" size="icon" onClick={() => setIsDark(!isDark)} className="rounded-full h-9 w-9">
+            <motion.div key={isDark ? 'dark' : 'light'} initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} transition={{ duration: 0.2 }}>
+              {isDark ? <MdLightMode className="h-[18px] w-[18px]" /> : <MdDarkMode className="h-[18px] w-[18px]" />}
+            </motion.div>
+          </Button>
+
+          {/* Notifications */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative"
-                data-testid="button-notifications"
-                data-tour="notifications"
-              >
-                <MdNotifications className="h-4 w-4" />
-                {notifications.filter(n => !n.read).length > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center">
-                    {notifications.filter(n => !n.read).length}
-                  </span>
-                )}
+              <Button variant="ghost" size="icon" className="relative rounded-full h-9 w-9">
+                <MdNotifications className="h-[18px] w-[18px]" />
+                <AnimatePresence>
+                  {unreadCount > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                      className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center"
+                    >
+                      {unreadCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-80 p-0">
-              <div className="px-4 py-3 border-b border-border">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-sm">Notifications</h4>
-                  <Badge variant="secondary" className="text-xs">
-                    {notifications.filter(n => !n.read).length} new
-                  </Badge>
-                </div>
+            <PopoverContent align="end" className="w-[360px] p-0 shadow-xl">
+              <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-muted/30">
+                <h4 className="font-semibold text-sm">Notifications</h4>
+                {unreadCount > 0 && (
+                  <Button variant="ghost" size="sm" className="text-xs h-auto p-1 text-primary hover:text-primary" onClick={markAllNotificationsRead}>
+                    Mark all read
+                  </Button>
+                )}
               </div>
-              <ScrollArea className="h-[280px]">
+              <ScrollArea className="h-[320px]">
                 <div className="divide-y divide-border">
-                  {notifications.map((notification) => {
-                    const IconComponent = notification.type === 'warning' ? MdWarning
-                      : notification.type === 'success' ? MdCheckCircle
-                      : MdInfoOutline;
-                    const iconColor = notification.type === 'warning' ? 'text-amber-500'
-                      : notification.type === 'success' ? 'text-emerald-500'
-                      : 'text-blue-500';
-
+                  {notifications.map((n) => {
+                    const Icon = n.type === 'deadline' ? MdWarning : n.type === 'workflow' ? MdCheckCircle : MdInfoOutline;
+                    const iconColor = n.type === 'deadline' ? 'text-amber-500' : n.type === 'workflow' ? 'text-emerald-500' : 'text-blue-500';
                     return (
-                      <div
-                        key={notification.id}
-                        className={`px-4 py-3 hover:bg-muted/50 cursor-pointer transition-colors ${!notification.read ? 'bg-primary/5' : ''}`}
+                      <motion.div
+                        key={n.id}
+                        whileHover={{ backgroundColor: 'hsl(var(--muted) / 0.5)' }}
+                        className={`px-4 py-3 cursor-pointer transition-colors ${!n.isRead ? 'bg-primary/[0.04]' : ''}`}
+                        onClick={() => { markNotificationRead(n.id); if (n.linkTo) setLocation(n.linkTo); }}
                       >
                         <div className="flex gap-3">
-                          <div className={`mt-0.5 ${iconColor}`}>
-                            <IconComponent className="h-4 w-4" />
-                          </div>
+                          <div className={`mt-0.5 ${iconColor}`}><Icon className="h-4 w-4" /></div>
                           <div className="flex-1 min-w-0">
-                            <p className={`text-sm ${!notification.read ? 'font-semibold' : 'font-medium'}`}>
-                              {notification.title}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                              {notification.message}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {notification.time}
-                            </p>
+                            <p className={`text-sm leading-snug ${!n.isRead ? 'font-semibold' : 'font-medium'}`}>{n.title}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
                           </div>
-                          {!notification.read && (
-                            <div className="h-2 w-2 rounded-full bg-primary mt-1.5" />
-                          )}
+                          {!n.isRead && <div className="h-2 w-2 rounded-full bg-primary mt-1.5 animate-pulse-dot" />}
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>
               </ScrollArea>
-              <div className="px-4 py-2 border-t border-border">
-                <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setLocation('/notifications')}>
-                  View All Notifications
-                </Button>
-              </div>
             </PopoverContent>
           </Popover>
 
+          {/* User menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                data-testid="button-user-menu"
-              >
-                <MdPerson className="h-4 w-4" />
+              <Button variant="ghost" className="rounded-full h-9 gap-2 pl-2 pr-3">
+                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-xs font-bold text-primary">
+                    {currentUser?.fullName?.split(' ').map(n => n[0]).join('') || 'AU'}
+                  </span>
+                </div>
+                <span className="hidden lg:inline text-sm font-medium">{currentUser?.fullName?.split(' ')[0] || 'Admin'}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <div className="px-2 py-1.5 border-b border-border mb-1">
-                <p className="text-sm font-medium">Admin User</p>
-                <p className="text-xs text-muted-foreground">admin@huawei.com</p>
+            <DropdownMenuContent align="end" className="w-56 shadow-xl">
+              <div className="px-3 py-2.5 border-b border-border">
+                <p className="text-sm font-semibold">{currentUser?.fullName || 'Admin User'}</p>
+                <p className="text-xs text-muted-foreground">{currentUser?.email || 'admin@gov.ng'}</p>
+                <Badge variant="outline" className="mt-1.5 text-[10px] capitalize">{currentUser?.role || 'admin'}</Badge>
               </div>
-              <DropdownMenuItem
-                data-testid="menu-item-profile"
-                onClick={() => setLocation('/settings')}
-              >
-                <MdPerson className="h-4 w-4 mr-2" />
-                Profile
+              <DropdownMenuItem onClick={() => setLocation('/settings')} className="gap-2 py-2">
+                <MdPerson className="h-4 w-4" /> Profile
               </DropdownMenuItem>
-              <DropdownMenuItem
-                data-testid="menu-item-settings"
-                onClick={() => setLocation('/settings')}
-              >
-                <MdSettings className="h-4 w-4 mr-2" />
-                Settings
+              <DropdownMenuItem onClick={() => setLocation('/settings')} className="gap-2 py-2">
+                <MdSettings className="h-4 w-4" /> Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                data-testid="menu-item-logout"
-                onClick={() => { logout(); setLocation('/login'); }}
-              >
-                <MdLogout className="h-4 w-4 mr-2" />
-                Logout
+              <DropdownMenuItem className="text-destructive focus:text-destructive gap-2 py-2" onClick={() => { logout(); setLocation('/login'); }}>
+                <MdLogout className="h-4 w-4" /> Sign out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -6,31 +6,20 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
-import { FAQChatbot } from "@/components/chatbot/faq-chatbot";
-import { OnboardingTour } from "@/components/onboarding-tour";
 import { ErrorBoundary } from "@/components/error-boundary";
-import { I18nProvider } from "@/lib/i18n";
 import { useDataStore } from "@/lib/data-store";
 
-// Lazy-loaded page components
 const Login = lazy(() => import("@/pages/login"));
 const Dashboard = lazy(() => import("@/pages/dashboard"));
-const Analytics = lazy(() => import("@/pages/analytics"));
-const Resources = lazy(() => import("@/pages/resources"));
-const Recommendations = lazy(() => import("@/pages/recommendations"));
-const Tenants = lazy(() => import("@/pages/tenants"));
-const Budgets = lazy(() => import("@/pages/budgets"));
-const Allocation = lazy(() => import("@/pages/allocation"));
+const Documents = lazy(() => import("@/pages/documents"));
+const DocumentDetail = lazy(() => import("@/pages/document-detail"));
+const Workflows = lazy(() => import("@/pages/workflows"));
+const AuditTrail = lazy(() => import("@/pages/audit"));
 const Reports = lazy(() => import("@/pages/reports"));
 const Notifications = lazy(() => import("@/pages/notifications"));
 const Settings = lazy(() => import("@/pages/settings"));
-const Help = lazy(() => import("@/pages/help"));
-const Guide = lazy(() => import("@/pages/guide"));
-const TenantDetail = lazy(() => import("@/pages/tenant-detail"));
-const TagGovernance = lazy(() => import("@/pages/tag-governance"));
-const TagGroupForm = lazy(() => import("@/pages/tag-group-form"));
-const WasteDetection = lazy(() => import("@/pages/waste-detection"));
-const Support = lazy(() => import("@/pages/support"));
+const WorkflowDetail = lazy(() => import("@/pages/workflow-detail"));
+const WorkflowCreate = lazy(() => import("@/pages/workflow-create"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function PageLoader() {
@@ -46,23 +35,15 @@ function Router() {
     <Suspense fallback={<PageLoader />}>
       <Switch>
         <Route path="/" component={Dashboard} />
-        <Route path="/analytics" component={Analytics} />
-        <Route path="/resources" component={Resources} />
-        <Route path="/recommendations" component={Recommendations} />
-        <Route path="/tenants" component={Tenants} />
-        <Route path="/tenant/:id" component={TenantDetail} />
-        <Route path="/tags" component={TagGovernance} />
-        <Route path="/tags/create" component={TagGroupForm} />
-        <Route path="/tags/edit/:id" component={TagGroupForm} />
-        <Route path="/budgets" component={Budgets} />
-        <Route path="/allocation" component={Allocation} />
-        <Route path="/notifications" component={Notifications} />
+        <Route path="/documents" component={Documents} />
+        <Route path="/documents/:id" component={DocumentDetail} />
+        <Route path="/workflows" component={Workflows} />
+        <Route path="/workflows/create" component={WorkflowCreate} />
+        <Route path="/workflows/:id" component={WorkflowDetail} />
+        <Route path="/audit" component={AuditTrail} />
         <Route path="/reports" component={Reports} />
-        <Route path="/waste" component={WasteDetection} />
+        <Route path="/notifications" component={Notifications} />
         <Route path="/settings" component={Settings} />
-        <Route path="/support" component={Support} />
-        <Route path="/help" component={Help} />
-        <Route path="/guide" component={Guide} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>
@@ -75,7 +56,7 @@ function AuthenticatedApp() {
       <Header />
       <div className="flex">
         <Sidebar />
-        <main data-tour="main-content" className="flex-1 h-[calc(100vh-4rem)] overflow-hidden">
+        <main className="flex-1 h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-4rem)] overflow-hidden">
           <ErrorBoundary>
             <Router />
           </ErrorBoundary>
@@ -91,30 +72,26 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <I18nProvider>
-          {isAuthenticated ? (
+        {isAuthenticated ? (
+          <Switch>
+            <Route path="/login">
+              <Redirect to="/" />
+            </Route>
+            <Route>
+              <AuthenticatedApp />
+            </Route>
+          </Switch>
+        ) : (
+          <Suspense fallback={<PageLoader />}>
             <Switch>
-              <Route path="/login">
-                <Redirect to="/" />
-              </Route>
+              <Route path="/login" component={Login} />
               <Route>
-                <AuthenticatedApp />
+                <Login />
               </Route>
             </Switch>
-          ) : (
-            <Suspense fallback={<PageLoader />}>
-              <Switch>
-                <Route path="/login" component={Login} />
-                <Route>
-                  <Login />
-                </Route>
-              </Switch>
-            </Suspense>
-          )}
-          <Toaster />
-          {isAuthenticated && <FAQChatbot />}
-          {isAuthenticated && <OnboardingTour />}
-        </I18nProvider>
+          </Suspense>
+        )}
+        <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
   );

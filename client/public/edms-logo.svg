@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" fill="none">
+  <!-- ============ NIGERIAN COAT OF ARMS (Simplified) ============ -->
+
+  <!-- Eagle (top) -->
+  <g transform="translate(100, 28)">
+    <!-- Body -->
+    <ellipse cx="0" cy="0" rx="12" ry="8" fill="#333" />
+    <!-- Head -->
+    <circle cx="0" cy="-10" r="6" fill="#333" />
+    <!-- Beak -->
+    <path d="M0,-7 L3,-4 L0,-5 Z" fill="#c9a100" />
+    <!-- Eye -->
+    <circle cx="1.5" cy="-11" r="1" fill="white" />
+    <!-- Left wing -->
+    <path d="M-12,-2 Q-30,-15 -35,5 Q-25,0 -12,5 Z" fill="#333" />
+    <path d="M-15,0 Q-28,-10 -32,4" stroke="#555" stroke-width="0.8" fill="none" />
+    <path d="M-13,2 Q-25,-6 -29,6" stroke="#555" stroke-width="0.8" fill="none" />
+    <!-- Right wing -->
+    <path d="M12,-2 Q30,-15 35,5 Q25,0 12,5 Z" fill="#333" />
+    <path d="M15,0 Q28,-10 32,4" stroke="#555" stroke-width="0.8" fill="none" />
+    <path d="M13,2 Q25,-6 29,6" stroke="#555" stroke-width="0.8" fill="none" />
+    <!-- Tail feathers -->
+    <path d="M-6,8 L0,18 L6,8 Z" fill="#333" />
+    <!-- Legs -->
+    <line x1="-4" y1="7" x2="-4" y2="14" stroke="#c9a100" stroke-width="1.5" />
+    <line x1="4" y1="7" x2="4" y2="14" stroke="#c9a100" stroke-width="1.5" />
+  </g>
+
+  <!-- Black Shield -->
+  <path d="M100 50 L140 65 L140 110 Q140 140 100 160 Q60 140 60 110 L60 65 Z" fill="#1a1a1a" stroke="#333" stroke-width="2" />
+
+  <!-- White Y (River Niger & Benue confluence) -->
+  <path d="M100 160 L100 115 L68 70" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M100 115 L132 70" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" />
+
+  <!-- Green band between Y arms (left) -->
+  <path d="M72 65 L100 110 L85 65 Z" fill="#008751" opacity="0.6" />
+  <!-- Green band between Y arms (right) -->
+  <path d="M128 65 L100 110 L115 65 Z" fill="#008751" opacity="0.6" />
+
+  <!-- Left Horse (supporter) -->
+  <g transform="translate(38, 95)">
+    <!-- Body -->
+    <ellipse cx="0" cy="0" rx="14" ry="9" fill="#ddd" transform="rotate(-15)" />
+    <!-- Neck -->
+    <path d="M8,-8 Q15,-25 10,-35" stroke="#ddd" stroke-width="7" fill="none" stroke-linecap="round" />
+    <!-- Head -->
+    <ellipse cx="12" cy="-36" rx="5" ry="4" fill="#ddd" transform="rotate(20, 12, -36)" />
+    <!-- Ear -->
+    <path d="M14,-40 L16,-45 L18,-40" fill="#ddd" />
+    <!-- Eye -->
+    <circle cx="14" cy="-37" r="1" fill="#333" />
+    <!-- Mane -->
+    <path d="M10,-30 Q5,-25 8,-18" stroke="#bbb" stroke-width="2" fill="none" />
+    <!-- Front leg -->
+    <line x1="5" y1="6" x2="8" y2="30" stroke="#ddd" stroke-width="4" stroke-linecap="round" />
+    <!-- Hoof -->
+    <rect x="6" y="28" width="5" height="3" rx="1" fill="#333" />
+    <!-- Back leg -->
+    <line x1="-8" y1="6" x2="-5" y2="30" stroke="#ddd" stroke-width="4" stroke-linecap="round" />
+    <rect x="-7" y="28" width="5" height="3" rx="1" fill="#333" />
+  </g>
+
+  <!-- Right Horse (supporter, mirrored) -->
+  <g transform="translate(162, 95) scale(-1, 1)">
+    <!-- Body -->
+    <ellipse cx="0" cy="0" rx="14" ry="9" fill="#ddd" transform="rotate(-15)" />
+    <!-- Neck -->
+    <path d="M8,-8 Q15,-25 10,-35" stroke="#ddd" stroke-width="7" fill="none" stroke-linecap="round" />
+    <!-- Head -->
+    <ellipse cx="12" cy="-36" rx="5" ry="4" fill="#ddd" transform="rotate(20, 12, -36)" />
+    <!-- Ear -->
+    <path d="M14,-40 L16,-45 L18,-40" fill="#ddd" />
+    <!-- Eye -->
+    <circle cx="14" cy="-37" r="1" fill="#333" />
+    <!-- Mane -->
+    <path d="M10,-30 Q5,-25 8,-18" stroke="#bbb" stroke-width="2" fill="none" />
+    <!-- Front leg -->
+    <line x1="5" y1="6" x2="8" y2="30" stroke="#ddd" stroke-width="4" stroke-linecap="round" />
+    <rect x="6" y="28" width="5" height="3" rx="1" fill="#333" />
+    <!-- Back leg -->
+    <line x1="-8" y1="6" x2="-5" y2="30" stroke="#ddd" stroke-width="4" stroke-linecap="round" />
+    <rect x="-7" y="28" width="5" height="3" rx="1" fill="#333" />
+  </g>
+
+  <!-- Green base / wreath -->
+  <path d="M50 135 Q60 128 75 130 Q85 125 100 128 Q115 125 125 130 Q140 128 150 135 L145 140 Q130 135 120 138 Q110 133 100 136 Q90 133 80 138 Q70 135 55 140 Z" fill="#008751" />
+
+  <!-- Costus spectabilis flowers (yellow, Nigerian national flower) -->
+  <circle cx="55" cy="133" r="4" fill="#FFD700" />
+  <circle cx="145" cy="133" r="4" fill="#FFD700" />
+  <circle cx="65" cy="129" r="3" fill="#FFD700" opacity="0.8" />
+  <circle cx="135" cy="129" r="3" fill="#FFD700" opacity="0.8" />
+  <circle cx="100" cy="131" r="3" fill="#FFD700" opacity="0.7" />
+
+  <!-- Motto banner -->
+  <rect x="30" y="165" width="140" height="22" rx="3" fill="#008751" />
+  <rect x="32" y="167" width="136" height="18" rx="2" fill="none" stroke="#FFD700" stroke-width="0.5" />
+
+  <!-- Motto text -->
+  <text x="100" y="180" text-anchor="middle" font-family="serif" font-size="8" font-weight="bold" fill="white" letter-spacing="1">
+    UNITY AND FAITH
+  </text>
+  <text x="100" y="189" text-anchor="middle" font-family="serif" font-size="6.5" fill="#FFD700" letter-spacing="0.8">
+    PEACE AND PROGRESS
+  </text>
+
+  <!-- EDMS label below -->
+  <text x="100" y="215" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#1a6b47" letter-spacing="3">
+    E D M S
+  </text>
+  <text x="100" y="228" text-anchor="middle" font-family="sans-serif" font-size="5.5" fill="#666" letter-spacing="0.5">
+    Electronic Document Management System
+  </text>
+</svg>
