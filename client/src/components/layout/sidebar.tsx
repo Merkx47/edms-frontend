@@ -1,4 +1,4 @@
-import { MdDashboard, MdDescription, MdApproval, MdHistory, MdBarChart, MdSettings, MdChevronLeft, MdChevronRight, MdNotifications, MdClose } from 'react-icons/md';
+import { MdDashboard, MdDescription, MdApproval, MdHistory, MdBarChart, MdSettings, MdChevronLeft, MdChevronRight, MdNotifications, MdClose, MdGroup } from 'react-icons/md';
 import { Link, useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -70,6 +70,7 @@ export function Sidebar() {
     { icon: MdHistory, label: 'Audit Trail', href: '/audit' },
     { icon: MdBarChart, label: 'Reports', href: '/reports' },
     { icon: MdNotifications, label: 'Notifications', href: '/notifications', badge: unreadCount },
+    { icon: MdGroup, label: 'Members', href: '/members' },
   ];
 
   const bottomNavItems: NavItem[] = [

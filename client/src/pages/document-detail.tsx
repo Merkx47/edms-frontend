@@ -235,18 +235,46 @@ export default function DocumentDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Document Preview */}
+          {/* Document Viewer */}
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
             <Card>
-              <CardContent className="pt-6">
-                <div className="bg-muted/50 rounded-xl p-10 flex flex-col items-center justify-center min-h-[280px] border border-border/50">
-                  <MdDescription className="h-14 w-14 text-muted-foreground/40 mb-4" />
-                  <p className="text-sm font-medium text-muted-foreground">Document Preview</p>
-                  <p className="text-xs text-muted-foreground mt-1">{doc.fileType.toUpperCase()} &middot; {formatFileSize(doc.fileSize)} &middot; Version {doc.version}</p>
-                  <Button variant="outline" className="mt-4 rounded-lg gap-2" onClick={() => handleDownload()}>
-                    <MdDownload className="h-4 w-4" /> Download to View
+              <CardContent className="pt-4 pb-0 px-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{doc.fileType}</span>
+                    <span className="text-xs text-muted-foreground">&middot; {formatFileSize(doc.fileSize)} &middot; v{doc.version}</span>
+                  </div>
+                  <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 rounded-lg" onClick={() => handleDownload()}>
+                    <MdDownload className="h-3.5 w-3.5" /> Download
                   </Button>
                 </div>
+                {/* Inline viewer — simulates an embedded PDF/doc viewer */}
+                <div className="rounded-xl border border-border overflow-hidden bg-white dark:bg-zinc-900" style={{ height: '420px' }}>
+                  <iframe
+                    title={doc.title}
+                    src={`https://docs.google.com/gview?url=https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF2.pdf&embedded=true`}
+                    className="w-full h-full"
+                    style={{ border: 'none' }}
+                    onError={() => {}}
+                  />
+                  {/* Fallback overlay — shown while iframe loads or fails */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/60 rounded-xl pointer-events-none" style={{ display: 'none' }}>
+                    <MdDescription className="h-12 w-12 text-muted-foreground/40 mb-3" />
+                    <p className="text-sm font-medium text-muted-foreground">{doc.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Preview loading…</p>
+                  </div>
+                </div>
+                {/* Simulated page viewer for non-PDF docs */}
+                {doc.fileType !== 'pdf' && (
+                  <div className="mt-2 mb-4 bg-muted/50 rounded-xl border border-border p-8 flex flex-col items-center justify-center min-h-[200px]">
+                    <MdDescription className="h-10 w-10 text-muted-foreground/40 mb-3" />
+                    <p className="text-sm text-muted-foreground font-medium">{doc.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{doc.fileType.toUpperCase()} preview not available — download to view</p>
+                    <Button variant="outline" size="sm" className="mt-3 gap-2 rounded-lg" onClick={() => handleDownload()}>
+                      <MdDownload className="h-3.5 w-3.5" /> Download
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
@@ -417,18 +445,18 @@ export default function DocumentDetail() {
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>Edit Document Metadata</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
-            <div><Label>Title</Label><Input value={editTitle} onChange={e => setEditTitle(e.target.value)} className="rounded-lg" /></div>
-            <div><Label>Description</Label><Textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} className="rounded-lg" /></div>
+            <div><Label>Title <span className="text-destructive">*</span></Label><Input value={editTitle} onChange={e => setEditTitle(e.target.value)} className="rounded-lg mt-1" /></div>
+            <div><Label>Description</Label><Textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} className="rounded-lg mt-1" /></div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Type</Label>
+                <Label>Type <span className="text-destructive">*</span></Label>
                 <Select value={editType} onValueChange={(v: any) => setEditType(v)}>
                   <SelectTrigger className="rounded-lg"><SelectValue /></SelectTrigger>
                   <SelectContent>{documentTypes.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
-                <Label>Department</Label>
+                <Label>Department <span className="text-destructive">*</span></Label>
                 <Select value={editDept} onValueChange={(v: any) => setEditDept(v)}>
                   <SelectTrigger className="rounded-lg"><SelectValue /></SelectTrigger>
                   <SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
@@ -436,7 +464,7 @@ export default function DocumentDetail() {
               </div>
             </div>
             <div>
-              <Label>Classification</Label>
+              <Label>Classification <span className="text-destructive">*</span></Label>
               <Select value={editClassification} onValueChange={(v: any) => setEditClassification(v)}>
                 <SelectTrigger className="rounded-lg"><SelectValue /></SelectTrigger>
                 <SelectContent>{secLevels.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>

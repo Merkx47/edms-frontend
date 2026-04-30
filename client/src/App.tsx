@@ -20,6 +20,7 @@ const Notifications = lazy(() => import("@/pages/notifications"));
 const Settings = lazy(() => import("@/pages/settings"));
 const WorkflowDetail = lazy(() => import("@/pages/workflow-detail"));
 const WorkflowCreate = lazy(() => import("@/pages/workflow-create"));
+const Members = lazy(() => import("@/pages/members"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function PageLoader() {
@@ -44,6 +45,7 @@ function Router() {
         <Route path="/reports" component={Reports} />
         <Route path="/notifications" component={Notifications} />
         <Route path="/settings" component={Settings} />
+        <Route path="/members" component={Members} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>

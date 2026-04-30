@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Document, DocumentVersion, Notification, StaffMember, Workflow, AuditLogEntry, Report } from '@shared/schema';
-import type { DocumentStatus, SecurityClassification, DocumentType, Department, AuditAction } from '@shared/schema';
+import type { DocumentStatus, SecurityClassification, DocumentType, Department, AuditAction, UserRole } from '@shared/schema';
 import { mockDocuments, mockNotifications, mockStaff, mockWorkflows, mockVersions, mockAuditLog, mockReports } from './mock-data';
 import { toast } from '@/hooks/use-toast';
 
@@ -24,6 +24,15 @@ export interface EdmsStore {
   currentUser: StaffMember | null;
   login: (email: string) => void;
   logout: () => void;
+
+  // Staff / Members
+  staff: StaffMember[];
+  addStaffMember: (member: Omit<StaffMember, 'id'>) => void;
+  updateStaffMember: (id: string, updates: Partial<Omit<StaffMember, 'id'>>) => void;
+  removeStaffMember: (id: string) => void;
+
+  // RBAC helper
+  canPerform: (action: 'upload' | 'approve' | 'manage_members' | 'settings' | 'delete') => boolean;
 
   // Documents
   documents: Document[];
@@ -95,6 +104,37 @@ export const useDataStore = create<EdmsStore>((set, get) => ({
     localStorage.removeItem('edms-auth');
     localStorage.removeItem('edms-auth-email');
     set({ isAuthenticated: false, currentUser: null });
+  },
+
+  // ─── Staff / Members ────────────────────────────────
+  staff: mockStaff,
+  addStaffMember: (member) => set((s) => {
+    const id = `u${Date.now()}`;
+    const newMember: StaffMember = { ...member, id };
+    toast({ title: 'Member Added', description: `${member.fullName} has been onboarded.` });
+    return { staff: [...s.staff, newMember] };
+  }),
+  updateStaffMember: (id, updates) => set((s) => ({
+    staff: s.staff.map(m => m.id === id ? { ...m, ...updates } : m),
+    currentUser: s.currentUser?.id === id ? { ...s.currentUser, ...updates } as StaffMember : s.currentUser,
+  })),
+  removeStaffMember: (id) => set((s) => {
+    const member = s.staff.find(m => m.id === id);
+    toast({ title: 'Member Removed', description: `${member?.fullName} has been removed.`, variant: 'destructive' });
+    return { staff: s.staff.filter(m => m.id !== id) };
+  }),
+
+  // ─── RBAC ───────────────────────────────────────────
+  canPerform: (action) => {
+    const role = get().currentUser?.role || 'viewer';
+    const permissions: Record<typeof action, UserRole[]> = {
+      upload: ['admin', 'director', 'manager', 'officer'],
+      approve: ['admin', 'director', 'manager'],
+      manage_members: ['admin'],
+      settings: ['admin', 'director'],
+      delete: ['admin'],
+    };
+    return permissions[action].includes(role as UserRole);
   },
 
   // ─── Documents ──────────────────────────────────────

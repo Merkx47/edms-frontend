@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { MdSearch, MdUploadFile, MdFolder, MdDescription, MdFilterList, MdGridView, MdViewList } from 'react-icons/md';
+import { MdSearch, MdUploadFile, MdFolder, MdDescription, MdFilterList, MdGridView, MdViewList, MdAddPhotoAlternate, MdDeleteOutline, MdCameraAlt, MdCheckCircle } from 'react-icons/md';
 import { mockFolders } from '@/lib/mock-data';
 import { useDataStore } from '@/lib/data-store';
 import { TablePagination, usePagination } from '@/components/ui/table-pagination';
@@ -38,6 +38,7 @@ export default function Documents() {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [showUpload, setShowUpload] = useState(false);
+  const [uploadMode, setUploadMode] = useState<'single' | 'bulk' | 'scan'>('single');
 
   // Upload form state
   const [uploadTitle, setUploadTitle] = useState('');
@@ -46,9 +47,20 @@ export default function Documents() {
   const [uploadDept, setUploadDept] = useState<Department>('Ministry of Finance');
   const [uploadClassification, setUploadClassification] = useState<SecurityClassification>('internal');
   const [uploadTags, setUploadTags] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [scanPages, setScanPages] = useState<string[]>([]);
+  const [scanComplete, setScanComplete] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const bulkInputRef = useRef<HTMLInputElement>(null);
 
-  const handleUpload = () => {
-    if (!uploadTitle) return;
+  const resetUploadForm = () => {
+    setUploadTitle(''); setUploadDesc(''); setUploadTags('');
+    setSelectedFiles([]); setScanPages([]); setScanComplete(false);
+    setUploadMode('single');
+  };
+
+  const handleSingleUpload = () => {
+    if (!uploadTitle || !uploadDept || !uploadType || !uploadClassification) return;
     createDocument({
       title: uploadTitle,
       description: uploadDesc,
@@ -57,8 +69,8 @@ export default function Documents() {
       status: 'draft',
       securityClassification: uploadClassification,
       referenceNumber: `${uploadDept.split(' ')[0].toUpperCase().slice(0, 3)}/${uploadType.toUpperCase().slice(0, 3)}/${new Date().getFullYear()}/${String(documents.length + 1).padStart(3, '0')}`,
-      fileSize: Math.floor(Math.random() * 5000000) + 500000,
-      fileType: 'pdf',
+      fileSize: selectedFiles[0]?.size || Math.floor(Math.random() * 5000000) + 500000,
+      fileType: selectedFiles[0]?.name.split('.').pop() || 'pdf',
       tags: uploadTags.split(',').map(t => t.trim()).filter(Boolean),
       metadata: {},
       createdBy: currentUser?.fullName || 'Unknown',
@@ -66,7 +78,54 @@ export default function Documents() {
       parentFolderId: null,
     });
     setShowUpload(false);
-    setUploadTitle(''); setUploadDesc(''); setUploadTags('');
+    resetUploadForm();
+  };
+
+  const handleBulkUpload = () => {
+    if (!uploadDept || !uploadType || !uploadClassification || selectedFiles.length === 0) return;
+    selectedFiles.forEach((file, i) => {
+      const title = uploadTitle || file.name.replace(/\.[^.]+$/, '');
+      createDocument({
+        title: selectedFiles.length > 1 ? `${title} (${i + 1})` : title,
+        description: uploadDesc,
+        type: uploadType,
+        department: uploadDept,
+        status: 'draft',
+        securityClassification: uploadClassification,
+        referenceNumber: `${uploadDept.split(' ')[0].toUpperCase().slice(0, 3)}/${uploadType.toUpperCase().slice(0, 3)}/${new Date().getFullYear()}/${String(documents.length + i + 1).padStart(3, '0')}`,
+        fileSize: file.size,
+        fileType: file.name.split('.').pop() || 'pdf',
+        tags: uploadTags.split(',').map(t => t.trim()).filter(Boolean),
+        metadata: {},
+        createdBy: currentUser?.fullName || 'Unknown',
+        retentionDate: new Date(Date.now() + 5 * 365 * 86400000).toISOString().split('T')[0],
+        parentFolderId: null,
+      });
+    });
+    setShowUpload(false);
+    resetUploadForm();
+  };
+
+  const handleScanUpload = () => {
+    if (!uploadTitle || !uploadDept || !uploadType || !uploadClassification || scanPages.length === 0) return;
+    createDocument({
+      title: uploadTitle,
+      description: uploadDesc || `Scanned document — ${scanPages.length} page(s)`,
+      type: uploadType,
+      department: uploadDept,
+      status: 'draft',
+      securityClassification: uploadClassification,
+      referenceNumber: `${uploadDept.split(' ')[0].toUpperCase().slice(0, 3)}/${uploadType.toUpperCase().slice(0, 3)}/${new Date().getFullYear()}/${String(documents.length + 1).padStart(3, '0')}`,
+      fileSize: scanPages.length * 200000,
+      fileType: 'pdf',
+      tags: uploadTags.split(',').map(t => t.trim()).filter(Boolean),
+      metadata: { pages: String(scanPages.length), source: 'scan' },
+      createdBy: currentUser?.fullName || 'Unknown',
+      retentionDate: new Date(Date.now() + 5 * 365 * 86400000).toISOString().split('T')[0],
+      parentFolderId: null,
+    });
+    setShowUpload(false);
+    resetUploadForm();
   };
 
   const filteredDocs = useMemo(() => {
@@ -90,44 +149,184 @@ export default function Documents() {
           <h1 className="text-2xl font-bold text-foreground">Documents</h1>
           <p className="text-sm text-muted-foreground">Browse, search, and manage all documents</p>
         </div>
-        <Dialog open={showUpload} onOpenChange={setShowUpload}>
+        <Dialog open={showUpload} onOpenChange={(o) => { setShowUpload(o); if (!o) resetUploadForm(); }}>
           <DialogTrigger asChild>
             <Button><MdUploadFile className="h-4 w-4 mr-2" /> Upload Document</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader><DialogTitle>Upload New Document</DialogTitle></DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div><Label>Title</Label><Input placeholder="Document title" value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} /></div>
-              <div><Label>Description</Label><Textarea placeholder="Brief description" value={uploadDesc} onChange={e => setUploadDesc(e.target.value)} /></div>
-              <div className="grid grid-cols-2 gap-4">
+          <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
+            <DialogHeader className="flex-shrink-0">
+              <DialogTitle>Upload Document</DialogTitle>
+              {/* Mode tabs */}
+              <div className="flex gap-1 mt-3 bg-muted rounded-lg p-1">
+                {(['single', 'bulk', 'scan'] as const).map(m => (
+                  <button key={m} onClick={() => setUploadMode(m)}
+                    className={`flex-1 text-xs py-1.5 rounded-md font-medium capitalize transition-colors ${uploadMode === m ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                    {m === 'single' ? 'Single Upload' : m === 'bulk' ? 'Bulk Upload' : 'Scan Pages'}
+                  </button>
+                ))}
+              </div>
+            </DialogHeader>
+
+            <div className="overflow-y-auto flex-1 pr-1">
+              <div className="space-y-4 pt-2">
+
+                {/* Common fields */}
+                {uploadMode !== 'bulk' && (
+                  <div>
+                    <Label>Title <span className="text-destructive">*</span></Label>
+                    <Input placeholder="Document title" value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} className="mt-1" />
+                  </div>
+                )}
+                {uploadMode === 'bulk' && (
+                  <div>
+                    <Label>Title Prefix <span className="text-muted-foreground text-xs">(optional — defaults to filename)</span></Label>
+                    <Input placeholder="e.g. Q1 Report" value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} className="mt-1" />
+                  </div>
+                )}
+
                 <div>
-                  <Label>Document Type</Label>
-                  <Select value={uploadType} onValueChange={(v: any) => setUploadType(v)}><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                    <SelectContent>{documentTypes.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
+                  <Label>Description</Label>
+                  <Textarea placeholder="Brief description" value={uploadDesc} onChange={e => setUploadDesc(e.target.value)} className="mt-1" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Document Type <span className="text-destructive">*</span></Label>
+                    <Select value={uploadType} onValueChange={(v: any) => setUploadType(v)}>
+                      <SelectTrigger className="mt-1"><SelectValue placeholder="Select type" /></SelectTrigger>
+                      <SelectContent>{documentTypes.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Department <span className="text-destructive">*</span></Label>
+                    <Select value={uploadDept} onValueChange={(v: any) => setUploadDept(v)}>
+                      <SelectTrigger className="mt-1"><SelectValue placeholder="Select dept" /></SelectTrigger>
+                      <SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Security Classification <span className="text-destructive">*</span></Label>
+                  <Select value={uploadClassification} onValueChange={(v: any) => setUploadClassification(v)}>
+                    <SelectTrigger className="mt-1"><SelectValue placeholder="Select level" /></SelectTrigger>
+                    <SelectContent>{securityLevels.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
+
+                {/* Single upload */}
+                {uploadMode === 'single' && (
+                  <div>
+                    <Label>File <span className="text-destructive">*</span></Label>
+                    <div className="mt-1 border-2 border-dashed border-border rounded-lg p-5 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                      onClick={() => fileInputRef.current?.click()}>
+                      <input ref={fileInputRef} type="file" accept=".pdf,.docx,.xlsx,.doc,.xls,.png,.jpg" className="hidden"
+                        onChange={e => setSelectedFiles(e.target.files ? [e.target.files[0]] : [])} />
+                      <MdUploadFile className="h-6 w-6 text-muted-foreground mx-auto mb-1" />
+                      {selectedFiles[0]
+                        ? <p className="text-sm font-medium text-primary">{selectedFiles[0].name}</p>
+                        : <p className="text-sm text-muted-foreground">Click to select file (PDF, DOCX, XLSX)</p>}
+                    </div>
+                  </div>
+                )}
+
+                {/* Bulk upload */}
+                {uploadMode === 'bulk' && (
+                  <div>
+                    <Label>Files <span className="text-destructive">*</span></Label>
+                    <div className="mt-1 border-2 border-dashed border-border rounded-lg p-5 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                      onClick={() => bulkInputRef.current?.click()}>
+                      <input ref={bulkInputRef} type="file" multiple accept=".pdf,.docx,.xlsx,.doc,.xls" className="hidden"
+                        onChange={e => setSelectedFiles(e.target.files ? Array.from(e.target.files) : [])} />
+                      <MdUploadFile className="h-6 w-6 text-muted-foreground mx-auto mb-1" />
+                      {selectedFiles.length > 0
+                        ? <p className="text-sm font-medium text-primary">{selectedFiles.length} file(s) selected</p>
+                        : <p className="text-sm text-muted-foreground">Click to select multiple files</p>}
+                    </div>
+                    {selectedFiles.length > 0 && (
+                      <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
+                        {selectedFiles.map((f, i) => (
+                          <div key={i} className="flex items-center justify-between text-xs text-muted-foreground border border-border rounded px-2 py-1">
+                            <span className="truncate">{f.name}</span>
+                            <button onClick={() => setSelectedFiles(prev => prev.filter((_, j) => j !== i))} className="ml-2 text-destructive hover:text-destructive/80">
+                              <MdDeleteOutline className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Scan pages */}
+                {uploadMode === 'scan' && (
+                  <div>
+                    <Label>Scanned Pages <span className="text-destructive">*</span></Label>
+                    <div className="mt-1 space-y-2">
+                      <div className="border-2 border-dashed border-border rounded-lg p-5 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                        onClick={() => {
+                          if (!scanComplete) {
+                            const input = document.createElement('input');
+                            input.type = 'file'; input.accept = 'image/*,.pdf';
+                            input.onchange = (e: any) => {
+                              const file = e.target.files?.[0];
+                              if (file) setScanPages(prev => [...prev, file.name]);
+                            };
+                            input.click();
+                          }
+                        }}>
+                        <MdCameraAlt className="h-6 w-6 text-muted-foreground mx-auto mb-1" />
+                        {scanComplete
+                          ? <p className="text-sm text-muted-foreground">Scanning complete</p>
+                          : <p className="text-sm text-muted-foreground">Click to scan/add a page ({scanPages.length} added)</p>}
+                      </div>
+                      {scanPages.length > 0 && (
+                        <div className="space-y-1 max-h-28 overflow-y-auto">
+                          {scanPages.map((name, i) => (
+                            <div key={i} className="flex items-center gap-2 text-xs border border-border rounded px-2 py-1">
+                              <MdAddPhotoAlternate className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                              <span className="truncate flex-1">Page {i + 1}: {name}</span>
+                              {!scanComplete && (
+                                <button onClick={() => setScanPages(prev => prev.filter((_, j) => j !== i))} className="text-destructive">
+                                  <MdDeleteOutline className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {scanPages.length > 0 && !scanComplete && (
+                        <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => setScanComplete(true)}>
+                          <MdCheckCircle className="h-4 w-4" /> Done Scanning — Compile into Single Document
+                        </Button>
+                      )}
+                      {scanComplete && (
+                        <div className="flex items-center gap-2 text-sm text-emerald-600 font-medium">
+                          <MdCheckCircle className="h-4 w-4" /> {scanPages.length} pages compiled — ready to upload
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div>
-                  <Label>Department</Label>
-                  <Select value={uploadDept} onValueChange={(v: any) => setUploadDept(v)}><SelectTrigger><SelectValue placeholder="Select dept" /></SelectTrigger>
-                    <SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-                  </Select>
+                  <Label>Tags <span className="text-muted-foreground text-xs">(comma-separated)</span></Label>
+                  <Input placeholder="e.g. budget, 2026, fiscal" value={uploadTags} onChange={e => setUploadTags(e.target.value)} className="mt-1" />
                 </div>
+
+                <p className="text-xs text-muted-foreground"><span className="text-destructive">*</span> Required fields</p>
+
+                <Button className="w-full"
+                  onClick={uploadMode === 'single' ? handleSingleUpload : uploadMode === 'bulk' ? handleBulkUpload : handleScanUpload}
+                  disabled={
+                    uploadMode === 'single' ? (!uploadTitle || !uploadDept || !uploadType || !uploadClassification) :
+                    uploadMode === 'bulk' ? (selectedFiles.length === 0 || !uploadDept || !uploadType || !uploadClassification) :
+                    (!uploadTitle || !uploadDept || !uploadType || !uploadClassification || scanPages.length === 0 || !scanComplete)
+                  }>
+                  <MdUploadFile className="h-4 w-4 mr-2" />
+                  {uploadMode === 'bulk' ? `Upload ${selectedFiles.length || ''} Document(s)` : 'Upload Document'}
+                </Button>
               </div>
-              <div>
-                <Label>Security Classification</Label>
-                <Select value={uploadClassification} onValueChange={(v: any) => setUploadClassification(v)}><SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
-                  <SelectContent>{securityLevels.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>File</Label>
-                <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
-                  <MdUploadFile className="h-6 w-6 text-muted-foreground mx-auto mb-1" />
-                  <p className="text-sm text-muted-foreground">Click to select (simulated)</p>
-                </div>
-              </div>
-              <div><Label>Tags</Label><Input placeholder="Comma-separated tags" value={uploadTags} onChange={e => setUploadTags(e.target.value)} /></div>
-              <Button className="w-full" onClick={handleUpload} disabled={!uploadTitle}>Upload Document</Button>
             </div>
           </DialogContent>
         </Dialog>
